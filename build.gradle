@@ -19,12 +19,12 @@ apply plugin: 'forge'
 
 // Requires iChunUtil to run. Just put iChunUtil-deobf.jar in the /libs/ folder or it won't compile.
 version = "0.8.0"
-group= "morph" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "Morph-Beta"
+group= "blocksteps" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "Blocksteps"
 
 minecraft {
-    version = "1.7.2-10.12.1.1061"
-    assetDir = "eclipse/assets"
+    version = "1.7.10-10.13.2.1236"
+    runDir = "eclipse"
 }
 processResources
 {
