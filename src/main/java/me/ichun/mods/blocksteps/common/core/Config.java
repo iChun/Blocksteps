@@ -25,12 +25,28 @@ public class Config extends ConfigBase
     public int camStartVertical = 30;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = -90, max = 90)
+    public int camStartScale = 100;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 0)
     public int camPanHorizontal = 90;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 0)
     public int camPanVertical = 15;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 0)
+    public int camZoom = 10;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 0, max = 100)
+    public int camPosX = 90;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 0, max = 100)
+    public int camPosY = 85;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     public KeyBind keyCamUp = new KeyBind(Keyboard.KEY_UP, false, true, false, false);
@@ -43,6 +59,12 @@ public class Config extends ConfigBase
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     public KeyBind keyCamRight = new KeyBind(Keyboard.KEY_RIGHT, false, true, false, false);
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    public KeyBind keyCamZoomIn = new KeyBind(Keyboard.KEY_UP, true, true, false, false);
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    public KeyBind keyCamZoomOut = new KeyBind(Keyboard.KEY_DOWN, true, true, false, false);
 
     public Config(File file)
     {

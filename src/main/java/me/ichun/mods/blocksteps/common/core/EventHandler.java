@@ -5,10 +5,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.culling.ClippingHelperImpl;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -27,6 +25,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 import us.ichun.mods.ichunutil.client.keybind.KeyEvent;
+import us.ichun.mods.ichunutil.client.render.RendererHelper;
 import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
 
 public class EventHandler
@@ -41,53 +40,62 @@ public class EventHandler
             {
                 ScaledResolution reso = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
 
-                //                double posX = reso.getScaledWidth() * 0.9D;
-                //                double posY = reso.getScaledHeight() * 0.85D;
-                double posX = reso.getScaledWidth() * 0.7D;
-                double posY = reso.getScaledHeight() * 0.7D;
-                double scale = 10D;
-                EntityLivingBase ent = mc.thePlayer;
-                GlStateManager.enableColorMaterial();
-                GlStateManager.pushMatrix();
-                GlStateManager.translate((float)posX, (float)posY, 50.0F);
-                GlStateManager.scale((float)(-scale), (float)scale, (float)scale);
-                GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);
+                double posX = reso.getScaledWidth() * (float)Blocksteps.config.camPosX / 100F;
+                double posY = reso.getScaledHeight() * (float)Blocksteps.config.camPosY / 100F;
+                float aScale = EntityHelperBase.interpolateValues(prevScale, scale, event.renderTickTime) / 10F;
 
-                GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleX, angleX, event.renderTickTime), 1.0F, 0.0F, 0.0F);
-                GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleY, angleY, event.renderTickTime), 0.0F, 1.0F, 0.0F);
-
-                renderWorld(mc, event.renderTickTime);
-
-                RenderHelper.enableStandardItemLighting();
-
-                if(ent instanceof EntityDragon)
+                if(aScale > 0F)
                 {
-                    GlStateManager.rotate(180F, 0.0F, 1.0F, 0.0F);
-                }
-                RenderManager rendermanager = Minecraft.getMinecraft().getRenderManager();
-                float viewY = rendermanager.playerViewY;
-                rendermanager.setPlayerViewY(180.0F);
-                rendermanager.renderEntityWithPosYaw(ent, 0.0D, 0.0D, 0.0D, 0.0F, event.renderTickTime);
-                if(ent instanceof EntityDragon)
-                {
-                    GlStateManager.rotate(180F, 0.0F, -1.0F, 0.0F);
-                }
+                    EntityLivingBase ent = mc.thePlayer;
+                    GlStateManager.enableColorMaterial();
+                    GlStateManager.pushMatrix();
+                    GlStateManager.translate((float)posX, (float)posY, 50.0F);
+                    GlStateManager.scale(-aScale, aScale, aScale);
+                    GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);
 
-                Entity ridden = ent.ridingEntity;
-                while(ridden != null)
-                {
-                    rendermanager.renderEntityWithPosYaw(ridden, ridden.posX - ent.posX, ridden.posY - ent.posY, ridden.posZ - ent.posZ, 0.0F, event.renderTickTime);
-                    ridden = ridden.ridingEntity;
+                    GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleX, angleX, event.renderTickTime), 1.0F, 0.0F, 0.0F);
+                    GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleY, angleY, event.renderTickTime), 0.0F, 1.0F, 0.0F);
+
+                    renderWorld(mc, event.renderTickTime);
+
+                    RenderHelper.enableStandardItemLighting();
+
+                    if(ent instanceof EntityDragon)
+                    {
+                        GlStateManager.rotate(180F, 0.0F, 1.0F, 0.0F);
+                    }
+                    RenderManager rendermanager = Minecraft.getMinecraft().getRenderManager();
+                    float viewY = rendermanager.playerViewY;
+                    rendermanager.setPlayerViewY(180.0F);
+                    rendermanager.renderEntityWithPosYaw(ent, 0.0D, 0.0D, 0.0D, 0.0F, event.renderTickTime);
+                    if(ent instanceof EntityDragon)
+                    {
+                        GlStateManager.rotate(180F, 0.0F, -1.0F, 0.0F);
+                    }
+
+                    Entity ridden = ent.riddenByEntity;
+                    while(ridden != null)
+                    {
+                        rendermanager.renderEntityWithPosYaw(ridden, ridden.posX - ent.posX, ridden.posY - ent.posY, ridden.posZ - ent.posZ, 0.0F, event.renderTickTime);
+                        ridden = ridden.riddenByEntity;
+                    }
+
+                    ridden = ent.ridingEntity;
+                    while(ridden != null)
+                    {
+                        rendermanager.renderEntityWithPosYaw(ridden, ridden.posX - ent.posX, ridden.posY - ent.posY, ridden.posZ - ent.posZ, 0.0F, event.renderTickTime);
+                        ridden = ridden.ridingEntity;
+                    }
+
+                    rendermanager.setPlayerViewY(viewY);
+
+                    GlStateManager.popMatrix();
+                    RenderHelper.disableStandardItemLighting();
+                    GlStateManager.disableRescaleNormal();
+                    GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+                    GlStateManager.disableTexture2D();
+                    GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
                 }
-
-                rendermanager.setPlayerViewY(viewY);
-
-                GlStateManager.popMatrix();
-                RenderHelper.disableStandardItemLighting();
-                GlStateManager.disableRescaleNormal();
-                GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
-                GlStateManager.disableTexture2D();
-                GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
             }
         }
         else
@@ -103,14 +111,22 @@ public class EventHandler
     {
         if(renderGlobalProxy != null)
         {
-            //            RenderGlobal ori = mc.renderGlobal;
-            //            mc.renderGlobal = renderGlobalProxy;
-            //            mc.entityRenderer.renderWorld(partialTicks, 0L);
-            //            mc.renderGlobal = ori;
+//            RendererHelper.startGlScissor(0, 0, 1, 1);
+//                        RenderGlobal ori = mc.renderGlobal;
+//                        mc.renderGlobal = renderGlobalProxy;
+//                        mc.entityRenderer.renderWorld(partialTicks, 0L);
+//                        mc.renderGlobal = ori;
+//            RendererHelper.endGlScissor();
             //
+//            renderGlobalProxy.viewFrustum = mc.renderGlobal.viewFrustum;
+//            System.out.println("PRINTS");
+//            System.out.println(renderGlobalProxy.viewFrustum.renderChunks.length);
+//            System.out.println(mc.renderGlobal.viewFrustum.renderChunks.length);
+
             RenderGlobal renderglobal = renderGlobalProxy;
             Entity entity = mc.getRenderViewEntity();
             int pass = 2;
+
 
             GlStateManager.shadeModel(GL11.GL_SMOOTH);
             mc.getTextureManager().bindTexture(TextureMap.locationBlocksTexture);
@@ -120,6 +136,8 @@ public class EventHandler
             double d2 = entity.lastTickPosZ + (entity.posZ - entity.lastTickPosZ) * (double)partialTicks;
             frustum.setPosition(d0, d1, d2);
             renderglobal.setupTerrain(entity, (double)partialTicks, frustum, 0, mc.thePlayer.isSpectator());
+            int i = Math.max(Minecraft.getDebugFPS(), 30);
+            renderglobal.updateChunks(System.nanoTime() + (long)(1000000000 / i));
             GlStateManager.matrixMode(GL11.GL_MODELVIEW);
             GlStateManager.pushMatrix();
             GlStateManager.disableAlpha();
@@ -170,9 +188,11 @@ public class EventHandler
             {
                 prevAngleX = angleX;
                 prevAngleY = angleY;
+                prevScale = scale;
 
                 angleX = angleX + (targetAngleX - angleX) * 0.4F;
                 angleY = angleY + (targetAngleY - angleY) * 0.4F;
+                scale = scale + (targetScale - scale) * 0.4F;
             }
         }
     }
@@ -182,6 +202,8 @@ public class EventHandler
     {
         Blocksteps.eventHandler.targetAngleX = Blocksteps.eventHandler.prevAngleX = Blocksteps.eventHandler.angleX = Blocksteps.config.camStartVertical;
         Blocksteps.eventHandler.targetAngleY = Blocksteps.eventHandler.prevAngleY = Blocksteps.eventHandler.angleY = Blocksteps.config.camStartHorizontal;
+        Blocksteps.eventHandler.targetScale = Blocksteps.eventHandler.prevScale = Blocksteps.eventHandler.scale = Blocksteps.config.camStartScale;
+
     }
 
     @SubscribeEvent
@@ -201,8 +223,6 @@ public class EventHandler
         }
 
         renderGlobalProxy.setWorldAndLoadRenderers(world);
-
-        renderGlobalProxy.updateDestroyBlockIcons();
     }
 
     @SideOnly(Side.CLIENT)
@@ -232,6 +252,18 @@ public class EventHandler
                     targetAngleX += Blocksteps.config.camPanVertical;
                     targetAngleX = MathHelper.clamp_float(targetAngleX, -90F, 90F);
                 }
+                else if(event.keyBind.equals(Blocksteps.config.keyCamZoomIn))
+                {
+                    targetScale += Blocksteps.config.camZoom;
+                }
+                else if(event.keyBind.equals(Blocksteps.config.keyCamZoomOut))
+                {
+                    targetScale -= Blocksteps.config.camZoom;
+                    if(targetScale < 0F)
+                    {
+                        targetScale = 0F;
+                    }
+                }
             }
         }
     }
@@ -240,10 +272,13 @@ public class EventHandler
 
     public float prevAngleY;
     public float prevAngleX;
+    public float prevScale;
 
     public float angleY = 45F;
     public float angleX = 30F;
+    public float scale = 100F;
 
     public float targetAngleX = 30F;
     public float targetAngleY = 45F;
+    public float targetScale = 100F;
 }
