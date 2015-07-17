@@ -13,6 +13,7 @@ blocksteps.config.prop.keyCamLeft.name=Camera Left
 blocksteps.config.prop.keyCamRight.name=Camera Right
 blocksteps.config.prop.keyCamZoomIn.name=Camera Zoom In
 blocksteps.config.prop.keyCamZoomOut.name=Camera Zoom Out
+blocksteps.config.prop.keyToggle.name=Mini-Map Toggle
 
 blocksteps.config.prop.blockCount.comment=The maximum number of blocks to track on each server for rendering.
 blocksteps.config.prop.camStartHorizontal.comment=Amount (in degrees) the camera starts being panned horizontally.
@@ -29,3 +30,4 @@ blocksteps.config.prop.keyCamLeft.comment=Key to pan the camera left.
 blocksteps.config.prop.keyCamRight.comment=Key to pan the camera right.
 blocksteps.config.prop.keyCamZoomIn.comment=Key to zoom in.
 blocksteps.config.prop.keyCamZoomOut.comment=Key to zoom out.
+blocksteps.config.prop.keyToggle.comment=Key to toggle the mini-map.

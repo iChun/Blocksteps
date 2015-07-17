@@ -1,9 +1,12 @@
-package me.ichun.mods.blocksteps.common.core;
+package me.ichun.mods.blocksteps.common.render;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.chunk.ListChunkFactory;
+import net.minecraft.client.renderer.chunk.VboChunkFactory;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -78,6 +81,34 @@ public class RenderGlobalProxy extends RenderGlobal
         if(renderSky)
         {
             super.renderCloudsFancy(par1, pass);
+        }
+    }
+
+    @Override
+    public void loadRenderers()
+    {
+        super.loadRenderers();
+        if (this.theWorld != null)
+        {
+            this.renderContainer = new RenderList();
+            this.renderChunkFactory = new ListChunkFactoryBlocksteps();
+
+            if (this.viewFrustum != null)
+            {
+                this.viewFrustum.deleteGlResources();
+            }
+
+            this.stopChunkUpdates();
+            this.viewFrustum = new ViewFrustum(this.theWorld, this.mc.gameSettings.renderDistanceChunks, this, this.renderChunkFactory);
+
+            Entity entity = this.mc.getRenderViewEntity();
+
+            if (entity != null)
+            {
+                this.viewFrustum.updateChunkPositions(entity.posX, entity.posZ);
+            }
+
+            this.renderEntitiesStartupCounter = 2;
         }
     }
 

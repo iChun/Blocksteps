@@ -66,6 +66,9 @@ public class Config extends ConfigBase
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     public KeyBind keyCamZoomOut = new KeyBind(Keyboard.KEY_DOWN, true, true, false, false);
 
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    public KeyBind keyToggle = new KeyBind(Keyboard.KEY_TAB, false, true, false, false);
+
     public Config(File file)
     {
         super(file);

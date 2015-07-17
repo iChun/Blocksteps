@@ -1,6 +1,13 @@
 package me.ichun.mods.blocksteps.common.core;
 
+import com.google.common.collect.ArrayListMultimap;
 import me.ichun.mods.blocksteps.common.Blocksteps;
+import me.ichun.mods.blocksteps.common.render.RenderGlobalProxy;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockSlab;
+import net.minecraft.block.BlockStairs;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.ScaledResolution;
@@ -15,6 +22,8 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.boss.EntityDragon;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumWorldBlockLayer;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.event.world.WorldEvent;
@@ -26,6 +35,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 import us.ichun.mods.ichunutil.client.keybind.KeyEvent;
 import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
+
+import java.util.List;
 
 public class EventHandler
 {
@@ -102,6 +113,8 @@ public class EventHandler
             if(renderGlobalProxy != null && renderGlobalProxy.theWorld != null && mc.theWorld == null)
             {
                 setNewWorld(null);
+                steps.clear();
+                //TODO set up saving here
             }
         }
     }
@@ -141,18 +154,18 @@ public class EventHandler
             renderglobal.renderBlockLayer(EnumWorldBlockLayer.CUTOUT, (double)partialTicks, pass, entity);
             mc.getTextureManager().getTexture(TextureMap.locationBlocksTexture).restoreLastBlurMipmap();
 
-            GlStateManager.matrixMode(GL11.GL_MODELVIEW);
-            GlStateManager.popMatrix();
-            GlStateManager.pushMatrix();
-            RenderHelper.enableStandardItemLighting();
-            net.minecraftforge.client.ForgeHooksClient.setRenderPass(0);
-            renderglobal.renderEntities(entity, frustum, partialTicks);
-            net.minecraftforge.client.ForgeHooksClient.setRenderPass(0);
-            RenderHelper.disableStandardItemLighting();
-            mc.entityRenderer.disableLightmap();
-            GlStateManager.matrixMode(GL11.GL_MODELVIEW);
-            GlStateManager.popMatrix();
-            GlStateManager.pushMatrix();
+            //            GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+            //            GlStateManager.popMatrix();
+            //            GlStateManager.pushMatrix();
+            //            RenderHelper.enableStandardItemLighting();
+            //            net.minecraftforge.client.ForgeHooksClient.setRenderPass(0);
+            //            renderglobal.renderEntities(entity, frustum, partialTicks);
+            //            net.minecraftforge.client.ForgeHooksClient.setRenderPass(0);
+            //            RenderHelper.disableStandardItemLighting();
+            //            mc.entityRenderer.disableLightmap();
+            //            GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+            //            GlStateManager.popMatrix();
+            //            GlStateManager.pushMatrix();
 
             GlStateManager.matrixMode(GL11.GL_MODELVIEW);
             GlStateManager.popMatrix();
@@ -199,8 +212,51 @@ public class EventHandler
                 angleX = angleX + (targetAngleX - angleX) * 0.4F;
                 angleY = angleY + (targetAngleY - angleY) * 0.4F;
                 scale = scale + (targetScale - scale) * 0.4F;
+
+                //TODO a block radius reveal?
+                List<BlockPos> steps = getSteps(mc.theWorld.provider.getDimensionId());
+                while(steps.size() > Blocksteps.config.blockCount)
+                {
+                    BlockPos pos = steps.get(0);
+                    steps.remove(0);
+                    if(renderGlobalProxy != null && !steps.contains(pos))
+                    {
+                        renderGlobalProxy.markBlockForUpdate(pos);
+                    }
+                }
+                BlockPos pos = new BlockPos(mc.thePlayer.posX, mc.thePlayer.posY - 1, mc.thePlayer.posZ);
+                boolean add = true;
+                if(!steps.isEmpty())
+                {
+                    BlockPos lastPos = steps.get(steps.size() - 1);
+                    if(lastPos.equals(pos))
+                    {
+                        add = false;
+                    }
+                }
+                if(add)
+                {
+                    IBlockState state = mc.theWorld.getBlockState(pos);
+                    if(state.getBlock().isAir(mc.theWorld, pos) || !(state.getBlock().isNormalCube(mc.theWorld, pos) || isAcceptableBlockType(state.getBlock())) || !mc.thePlayer.onGround)
+                    {
+                        add = false;
+                    }
+                }
+                if(add)
+                {
+                    if(renderGlobalProxy != null && !steps.contains(pos))
+                    {
+                        renderGlobalProxy.markBlockForUpdate(pos);
+                    }
+                    steps.add(pos);
+                }
             }
         }
+    }
+
+    public static boolean isAcceptableBlockType(Block block)
+    {
+        return block.getRenderType() == 2 || block.getMaterial() == Material.glass || block == Blocks.glowstone || block == Blocks.cake || block == Blocks.tnt || block == Blocks.ice || block instanceof BlockSlab || block == Blocks.anvil || block instanceof BlockStairs;
     }
 
     @SubscribeEvent
@@ -208,8 +264,8 @@ public class EventHandler
     {
         Blocksteps.eventHandler.targetAngleX = Blocksteps.eventHandler.prevAngleX = Blocksteps.eventHandler.angleX = Blocksteps.config.camStartVertical;
         Blocksteps.eventHandler.targetAngleY = Blocksteps.eventHandler.prevAngleY = Blocksteps.eventHandler.angleY = Blocksteps.config.camStartHorizontal;
-        Blocksteps.eventHandler.targetScale = Blocksteps.eventHandler.prevScale = Blocksteps.eventHandler.scale = Blocksteps.config.camStartScale;
-
+        Blocksteps.eventHandler.targetScale = Blocksteps.config.camStartScale;
+        Blocksteps.eventHandler.prevScale = Blocksteps.eventHandler.scale = 0;
     }
 
     @SubscribeEvent
@@ -261,6 +317,7 @@ public class EventHandler
                 else if(event.keyBind.equals(Blocksteps.config.keyCamZoomIn))
                 {
                     targetScale += Blocksteps.config.camZoom;
+                    oriScale = targetScale;
                 }
                 else if(event.keyBind.equals(Blocksteps.config.keyCamZoomOut))
                 {
@@ -269,9 +326,26 @@ public class EventHandler
                     {
                         targetScale = 0F;
                     }
+                    oriScale = targetScale;
+                }
+                else if(event.keyBind.equals(Blocksteps.config.keyToggle))
+                {
+                    if(targetScale == 0F)
+                    {
+                        targetScale = oriScale;
+                    }
+                    else
+                    {
+                        targetScale = 0F;
+                    }
                 }
             }
         }
+    }
+
+    public List<BlockPos> getSteps(int dimension)
+    {
+        return steps.get(dimension);
     }
 
     public RenderGlobalProxy renderGlobalProxy;
@@ -287,6 +361,9 @@ public class EventHandler
     public float targetAngleX = 30F;
     public float targetAngleY = 45F;
     public float targetScale = 100F;
+    public float oriScale = 100F;
 
     public int frameCount = 0;
+
+    public ArrayListMultimap<Integer, BlockPos> steps = ArrayListMultimap.create();
 }
