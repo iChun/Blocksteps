@@ -5,16 +5,16 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.culling.ClippingHelperImpl;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.boss.EntityDragon;
-import net.minecraft.entity.passive.EntityPig;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumWorldBlockLayer;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.event.world.WorldEvent;
@@ -25,7 +25,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 import us.ichun.mods.ichunutil.client.keybind.KeyEvent;
-import us.ichun.mods.ichunutil.client.render.RendererHelper;
 import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
 
 public class EventHandler
@@ -111,22 +110,16 @@ public class EventHandler
     {
         if(renderGlobalProxy != null)
         {
-//            RendererHelper.startGlScissor(0, 0, 1, 1);
-//                        RenderGlobal ori = mc.renderGlobal;
-//                        mc.renderGlobal = renderGlobalProxy;
-//                        mc.entityRenderer.renderWorld(partialTicks, 0L);
-//                        mc.renderGlobal = ori;
-//            RendererHelper.endGlScissor();
-            //
-//            renderGlobalProxy.viewFrustum = mc.renderGlobal.viewFrustum;
-//            System.out.println("PRINTS");
-//            System.out.println(renderGlobalProxy.viewFrustum.renderChunks.length);
-//            System.out.println(mc.renderGlobal.viewFrustum.renderChunks.length);
+            //            RendererHelper.startGlScissor(0, 0, 1, 1);
+            //                        RenderGlobal ori = mc.renderGlobal;
+            //                        mc.renderGlobal = renderGlobalProxy;
+            //                        mc.entityRenderer.renderWorldPass(2, partialTicks, 0L);
+            //                        mc.renderGlobal = ori;
+            //            RendererHelper.endGlScissor();
 
             RenderGlobal renderglobal = renderGlobalProxy;
             Entity entity = mc.getRenderViewEntity();
             int pass = 2;
-
 
             GlStateManager.shadeModel(GL11.GL_SMOOTH);
             mc.getTextureManager().bindTexture(TextureMap.locationBlocksTexture);
@@ -135,7 +128,7 @@ public class EventHandler
             double d1 = entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * (double)partialTicks;
             double d2 = entity.lastTickPosZ + (entity.posZ - entity.lastTickPosZ) * (double)partialTicks;
             frustum.setPosition(d0, d1, d2);
-            renderglobal.setupTerrain(entity, (double)partialTicks, frustum, 0, mc.thePlayer.isSpectator());
+            renderglobal.setupTerrain(entity, (double)partialTicks, frustum, frameCount++, mc.thePlayer.isSpectator());
             int i = Math.max(Minecraft.getDebugFPS(), 30);
             renderglobal.updateChunks(System.nanoTime() + (long)(1000000000 / i));
             GlStateManager.matrixMode(GL11.GL_MODELVIEW);
@@ -147,9 +140,22 @@ public class EventHandler
             mc.getTextureManager().getTexture(TextureMap.locationBlocksTexture).setBlurMipmap(false, false);
             renderglobal.renderBlockLayer(EnumWorldBlockLayer.CUTOUT, (double)partialTicks, pass, entity);
             mc.getTextureManager().getTexture(TextureMap.locationBlocksTexture).restoreLastBlurMipmap();
+
             GlStateManager.matrixMode(GL11.GL_MODELVIEW);
             GlStateManager.popMatrix();
+            GlStateManager.pushMatrix();
+            RenderHelper.enableStandardItemLighting();
+            net.minecraftforge.client.ForgeHooksClient.setRenderPass(0);
+            renderglobal.renderEntities(entity, frustum, partialTicks);
+            net.minecraftforge.client.ForgeHooksClient.setRenderPass(0);
+            RenderHelper.disableStandardItemLighting();
+            mc.entityRenderer.disableLightmap();
+            GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+            GlStateManager.popMatrix();
+            GlStateManager.pushMatrix();
 
+            GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+            GlStateManager.popMatrix();
             GlStateManager.shadeModel(GL11.GL_FLAT);
 
             GlStateManager.enableCull();
@@ -281,4 +287,6 @@ public class EventHandler
     public float targetAngleX = 30F;
     public float targetAngleY = 45F;
     public float targetScale = 100F;
+
+    public int frameCount = 0;
 }
