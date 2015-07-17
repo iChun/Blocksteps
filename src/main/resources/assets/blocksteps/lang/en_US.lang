@@ -1,0 +1,19 @@
+blocksteps.config.prop.blockCount.name=Maximum blocks to count per server.
+blocksteps.config.prop.camStartHorizontal.name=Camera Start Horizontal
+blocksteps.config.prop.camStartVertical.name=Camera Start Vertical
+blocksteps.config.prop.camPanHorizontal.name=Camera Pan Horizontal
+blocksteps.config.prop.camPanVertical.name=Camera Pan Vertical
+blocksteps.config.prop.keyCamUp.name=Camera Up
+blocksteps.config.prop.keyCamDown.name=Camera Down
+blocksteps.config.prop.keyCamLeft.name=Camera Left
+blocksteps.config.prop.keyCamRight.name= Camera Right
+
+blocksteps.config.prop.blockCount.comment=The maximum number of blocks to track on each server for rendering.
+blocksteps.config.prop.camStartHorizontal.comment=Amount (in degrees) the camera starts being panned horizontally
+blocksteps.config.prop.camStartVertical.comment=Amount (in degrees) the camera starts being panned vertically
+blocksteps.config.prop.camPanHorizontal.comment=Amount (in degrees) to pan the camera horizontally
+blocksteps.config.prop.camPanVertical.comment=Amount (in degrees) to pan the camera vertically
+blocksteps.config.prop.keyCamUp.comment=Key to pan the camera up
+blocksteps.config.prop.keyCamDown.comment=Key to pan the camera down
+blocksteps.config.prop.keyCamLeft.comment=Key to pan the camera left
+blocksteps.config.prop.keyCamRight.comment=Key to pan the camera right

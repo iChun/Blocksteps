@@ -1,0 +1,20 @@
+[
+{
+  "modid" : "Blocksteps",
+  "name" : "Blocksteps",
+  "version" : "${version}",
+  "url" : "http://www.ichun.me/",
+  "credits" : "",
+  "authorList": [
+    "iChun"
+  ],
+  "description": "Adds a small 3D minimap of the blocks you've stepped on.",
+  "updateUrl" : "",
+  "parent" : "",
+  "screenshots": [
+  ],
+  "dependencies": [
+    "Forge", "iChunUtil"
+  ]
+}
+]
