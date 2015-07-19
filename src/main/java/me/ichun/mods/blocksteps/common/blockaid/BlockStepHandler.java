@@ -154,7 +154,7 @@ public class BlockStepHandler
 
     public static boolean isAcceptableBlockType(Block block)
     {
-        return (block.getRenderType() == 2 || block.getMaterial() == Material.glass || block == Blocks.glowstone || block == Blocks.waterlily || block == Blocks.farmland || block == Blocks.tnt || block == Blocks.ice || block instanceof BlockSlab || block instanceof BlockStairs) && !(block instanceof IPlantable);
+        return block.getRenderType() == 2 || block.getMaterial() == Material.glass || block == Blocks.glowstone || block == Blocks.waterlily || block == Blocks.farmland || block == Blocks.tnt || block == Blocks.ice || block instanceof BlockSlab || block instanceof BlockStairs;
     }
 
     public static boolean isBlockTypePeripheral(World world, BlockPos pos, Block block, IBlockState state, List<BlockPos> availableBlocks)
@@ -202,8 +202,10 @@ public class BlockStepHandler
         blockPeripheralRegistry.put(BlockFenceGate.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockFire.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockFlowerPot.class, DEFAULT_GENERIC_HANDLER);
+        blockPeripheralRegistry.put(BlockGrass.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockHopper.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockJukebox.class, DEFAULT_GENERIC_HANDLER);
+        blockPeripheralRegistry.put(BlockLiquid.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockMelon.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockNote.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockPumpkin.class, DEFAULT_GENERIC_HANDLER);
@@ -214,6 +216,7 @@ public class BlockStepHandler
         blockPeripheralRegistry.put(BlockSign.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockSkull.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockSnow.class, DEFAULT_GENERIC_HANDLER);
+        blockPeripheralRegistry.put(BlockTrapDoor.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockTripWire.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockWall.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockWorkbench.class, DEFAULT_GENERIC_HANDLER);
@@ -231,12 +234,14 @@ public class BlockStepHandler
         blockPeripheralRegistry.put(BlockChest.class, new HorizontalGenericHandler(BlockChest.class));
 
         blockPeripheralRegistry.put(BlockButton.class, new ButtonHandler());
+        blockPeripheralRegistry.put(BlockEndPortalFrame.class, new EndPortalHandler());
+        blockPeripheralRegistry.put(BlockHugeMushroom.class, new MushroomHandler());
+        blockPeripheralRegistry.put(BlockLog.class, new LogHandler());
         blockPeripheralRegistry.put(BlockLadder.class, new LadderHandler());
         blockPeripheralRegistry.put(BlockLever.class, new LeverHandler());
+        blockPeripheralRegistry.put(BlockObsidian.class, new ObsidianHandler());
+        blockPeripheralRegistry.put(BlockPortal.class, new PortalHandler());
         blockPeripheralRegistry.put(BlockTorch.class, new TorchHandler());
+        blockPeripheralRegistry.put(BlockTripWireHook.class, new TripWireHookHandler());
     }
-
-    //huge mushrooms
-    //trees
-    //Portals
 }

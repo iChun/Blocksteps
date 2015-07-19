@@ -39,6 +39,14 @@ public class Config extends ConfigBase
     public int stepPeripherals = 1;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int treeDetection = 1;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int endTowerDetection = 1;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = -180, max = 180)
     public int camStartHorizontal = 45;
 
