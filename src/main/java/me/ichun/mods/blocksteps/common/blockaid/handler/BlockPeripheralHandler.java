@@ -20,4 +20,9 @@ public abstract class BlockPeripheralHandler
         poses.add(pos);
         return poses;
     }
+
+    public boolean requireThread()
+    {
+        return false;
+    }
 }

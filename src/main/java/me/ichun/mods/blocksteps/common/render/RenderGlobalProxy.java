@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.client.renderer.chunk.VboChunkFactory;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.culling.ICamera;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.entity.Entity;
@@ -188,6 +189,11 @@ public class RenderGlobalProxy extends RenderGlobal
             {
                 this.countEntitiesTotal = list.size();
             }
+
+            RenderManager rendermanager = Minecraft.getMinecraft().getRenderManager();
+            float viewY = rendermanager.playerViewY;
+            rendermanager.setPlayerViewY(Blocksteps.eventHandler.angleY + 180F);
+
             int i;
             Entity entity2;
 
@@ -236,6 +242,8 @@ public class RenderGlobalProxy extends RenderGlobal
                     }
                 }
             }
+
+            rendermanager.setPlayerViewY(viewY);
 
             this.theWorld.theProfiler.endStartSection("blockentities");
             RenderHelper.enableStandardItemLighting();
@@ -300,7 +308,7 @@ public class RenderGlobalProxy extends RenderGlobal
 
         Minecraft mc = Minecraft.getMinecraft();
 
-        if(entity == mc.getRenderViewEntity() || mc.getRenderViewEntity() != null && ((entity == mc.getRenderViewEntity().riddenByEntity || entity == mc.getRenderViewEntity().ridingEntity) || mc.getRenderViewEntity().ridingEntity != null && entity == mc.getRenderViewEntity().ridingEntity.ridingEntity))
+        if(entity == mc.getRenderViewEntity() || entity instanceof EntityPlayer && Blocksteps.config.trackOtherPlayers == 1 || mc.getRenderViewEntity() != null && ((entity == mc.getRenderViewEntity().riddenByEntity || entity == mc.getRenderViewEntity().ridingEntity) || mc.getRenderViewEntity().ridingEntity != null && entity == mc.getRenderViewEntity().ridingEntity.ridingEntity))
         {
             return true;
         }

@@ -45,4 +45,10 @@ public class ObsidianHandler extends BlockPeripheralHandler
         }
         return poses;
     }
+
+    @Override
+    public boolean requireThread()
+    {
+        return true;
+    }
 }

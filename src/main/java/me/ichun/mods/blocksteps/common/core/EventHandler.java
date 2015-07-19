@@ -1,9 +1,10 @@
 package me.ichun.mods.blocksteps.common.core;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.gson.Gson;
 import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.blockaid.BlockStepHandler;
+import me.ichun.mods.blocksteps.common.blockaid.CheckBlockInfo;
+import me.ichun.mods.blocksteps.common.blockaid.ThreadCheckBlocks;
 import me.ichun.mods.blocksteps.common.render.RenderGlobalProxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
@@ -14,11 +15,9 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.boss.EntityDragon;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumWorldBlockLayer;
@@ -35,6 +34,7 @@ import us.ichun.mods.ichunutil.client.render.RendererHelper;
 import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -70,13 +70,16 @@ public class EventHandler
                     }
                     float alphaAmp = MathHelper.clamp_float(aScale / 0.1F, 0F, 1F);
 
+                    GlStateManager.disableDepth();
+                    GlStateManager.depthMask(false);
+
                     if(Blocksteps.config.mapBackgroundOpacity > 0)
                     {
                         RendererHelper.drawColourOnScreen(Blocksteps.config.mapBackgroundColour.getColour(), (int)((float)Blocksteps.config.mapBackgroundOpacity / 100F * 255F * alphaAmp), x, y, width, height, -200D);
                     }
-                    if(mc.thePlayer.ticksExisted < LOAD_TIMEOUT)
+                    if(mc.thePlayer.ticksExisted < Blocksteps.config.mapLoad)
                     {
-                        float prog = MathHelper.clamp_float((mc.thePlayer.ticksExisted + event.renderTickTime) / (float)LOAD_TIMEOUT, 0F, 1F);
+                        float prog = MathHelper.clamp_float((mc.thePlayer.ticksExisted + event.renderTickTime) / (float)Blocksteps.config.mapLoad, 0F, 1F);
                         RendererHelper.drawColourOnScreen(170, 170, 170, (int)((float)Blocksteps.config.mapBackgroundOpacity / 100F * 255F * alphaAmp), x, y + (height * 0.95D), width * prog, (height * 0.05D), -200D);
                     }
                     if(Blocksteps.config.mapBorderOpacity > 0)
@@ -105,11 +108,37 @@ public class EventHandler
                         }
                     }
 
+                    GlStateManager.depthMask(true);
+                    GlStateManager.enableDepth();
+
                     RendererHelper.startGlScissor(x, y, width, height);
                     drawMap(mc, reso, x, y, width, height, aScale, event.renderTickTime);
                     RendererHelper.endGlScissor();
                     GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
                     GlStateManager.disableAlpha();
+                }
+            }
+
+            synchronized(blocksToAdd)
+            {
+                if(!blocksToAdd.isEmpty())
+                {
+                    for(CheckBlockInfo info : blocksToAdd)
+                    {
+                        if(info.world == mc.theWorld)
+                        {
+                            if(renderGlobalProxy != null)
+                            {
+                                for(BlockPos pos : info.blocksToRender)
+                                {
+                                    renderGlobalProxy.markBlockForUpdate(pos);
+                                }
+                                repopulateBlocksToRender = true;
+                            }
+                            blocksToRenderByStep.get(info.oriPos).addAll(info.blocksToRender);
+                        }
+                    }
+                    blocksToAdd.clear();
                 }
             }
         }
@@ -121,6 +150,10 @@ public class EventHandler
                 steps.clear();
                 blocksToRenderByStep.clear();
                 blocksToRender.clear();
+                synchronized(Blocksteps.eventHandler.threadCheckBlocks.checks)
+                {
+                    Blocksteps.eventHandler.threadCheckBlocks.checks.clear();
+                }
                 //TODO set up saving here
             }
         }
@@ -134,7 +167,7 @@ public class EventHandler
         EntityLivingBase ent = mc.thePlayer;
         GlStateManager.enableColorMaterial();
         GlStateManager.pushMatrix();
-        GlStateManager.translate((float)posX, (float)posY, 200.0F);
+        GlStateManager.translate((float)posX, (float)posY, 300.0F);
         if(fullscreen)
         {
             GlStateManager.translate(EntityHelperBase.interpolateValues(prevOffsetX, offsetX, partialTicks), EntityHelperBase.interpolateValues(prevOffsetY, offsetY, partialTicks), 0F);
@@ -147,7 +180,10 @@ public class EventHandler
 
         GlStateManager.translate(0, -mc.thePlayer.getEyeHeight(), 0F);
 
+        boolean hideGui = mc.gameSettings.hideGUI;
+        mc.gameSettings.hideGUI = Blocksteps.config.hideNamePlates == 1;
         renderWorld(mc, partialTicks);
+        mc.gameSettings.hideGUI = hideGui;
 
         GlStateManager.enableLighting();
         GlStateManager.enableNormalize();
@@ -277,6 +313,15 @@ public class EventHandler
                 offsetX = offsetX + (targetOffsetX - offsetX) * 0.4F;
                 offsetY = offsetY + (targetOffsetY - offsetY) * 0.4F;
 
+                if(Blocksteps.config.lockMapToHeadYaw == 1)
+                {
+                    targetAngleY = angleY = mc.getRenderViewEntity().rotationYaw + 180F;
+                }
+                if(Blocksteps.config.lockMapToHeadPitch == 1)
+                {
+                    targetAngleX = angleX = mc.getRenderViewEntity().rotationPitch;
+                }
+
                 if(renderGlobalProxy != null && (Math.abs(targetAngleX - angleX) > 0.01D || Math.abs(targetAngleY - angleY) > 0.01D || Math.abs(targetScale - scale) > 0.01D))
                 {
                     renderGlobalProxy.lastViewEntityPitch += 0.001F;
@@ -315,11 +360,12 @@ public class EventHandler
                     BlockStepHandler.handleStep(ent, steps);
                 }
 
-                if(repopulateBlocksToRender && mc.thePlayer.ticksExisted > LOAD_TIMEOUT)
+                if(repopulateBlocksToRender && mc.thePlayer.ticksExisted > Blocksteps.config.mapLoad)
                 {
                     repopulateBlocksToRender = false;
-                    if(mc.thePlayer.ticksExisted == LOAD_TIMEOUT + 1)
+                    if(mc.thePlayer.ticksExisted == Blocksteps.config.mapLoad + 1 || purgeRerender)
                     {
+                        purgeRerender = false;
                         BlockStepHandler.getBlocksToRender(true, steps.toArray(new BlockPos[steps.size()]));
                     }
                     for(BlockPos pos : steps)
@@ -338,6 +384,8 @@ public class EventHandler
         Blocksteps.eventHandler.targetAngleY = Blocksteps.eventHandler.prevAngleY = Blocksteps.eventHandler.angleY = Blocksteps.eventHandler.oriAngleY = Blocksteps.config.camStartHorizontal;
         Blocksteps.eventHandler.targetScale = Blocksteps.config.camStartScale;
         Blocksteps.eventHandler.prevScale = Blocksteps.eventHandler.scale = 0;
+
+        System.out.println(event.manager.getRemoteAddress());
     }
 
     @SubscribeEvent
@@ -348,6 +396,10 @@ public class EventHandler
             setNewWorld((WorldClient)event.world);
             blocksToRenderByStep.clear();
             blocksToRender.clear();
+            synchronized(Blocksteps.eventHandler.threadCheckBlocks.checks)
+            {
+                Blocksteps.eventHandler.threadCheckBlocks.checks.clear();
+            }
             repopulateBlocksToRender = true;
         }
     }
@@ -357,6 +409,8 @@ public class EventHandler
         if (renderGlobalProxy == null)
         {
             renderGlobalProxy = new RenderGlobalProxy(Minecraft.getMinecraft());
+            threadCheckBlocks = new ThreadCheckBlocks();
+            threadCheckBlocks.start();
         }
 
         renderGlobalProxy.setWorldAndLoadRenderers(world);
@@ -458,10 +512,11 @@ public class EventHandler
                     {
                         fullscreen = !fullscreen;
                         targetOffsetX = targetOffsetY = prevOffsetX = prevOffsetY = offsetX = offsetY = 0F;
-
-//                        System.out.println(steps);
-//                        System.out.println((new Gson()).toJson(steps));
                     }
+                }
+                else if(event.keyBind.equals(Blocksteps.config.keyPurgeRerender))
+                {
+                    purgeRerender = true;
                 }
             }
         }
@@ -473,6 +528,7 @@ public class EventHandler
     }
 
     public RenderGlobalProxy renderGlobalProxy;
+    public ThreadCheckBlocks threadCheckBlocks;
 
     public float prevAngleY;
     public float prevAngleX;
@@ -503,6 +559,7 @@ public class EventHandler
     public ArrayListMultimap<BlockPos, BlockPos> blocksToRenderByStep = ArrayListMultimap.create();
     public boolean repopulateBlocksToRender = false;
     public HashSet<BlockPos> blocksToRender = new HashSet<BlockPos>();
+    public final List<CheckBlockInfo> blocksToAdd = Collections.synchronizedList(new ArrayList<CheckBlockInfo>());
+    public boolean purgeRerender;
 
-    public static final int LOAD_TIMEOUT = 40;
 }

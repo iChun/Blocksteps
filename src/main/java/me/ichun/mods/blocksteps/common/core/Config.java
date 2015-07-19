@@ -20,7 +20,7 @@ public class Config extends ConfigBase
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 0, max = 32)
-    public int renderDistance = 4;
+    public int renderDistance = 6;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntBool
@@ -29,6 +29,18 @@ public class Config extends ConfigBase
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntBool
     public int trackOtherPlayers = 0;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int hideNamePlates = 0;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int lockMapToHeadYaw = 0;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int lockMapToHeadPitch = 0;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 1, max = 15)
@@ -81,6 +93,10 @@ public class Config extends ConfigBase
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 0, max = 1)
     public int mapType = 0;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 20, max = 500)
+    public int mapLoad = 40;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntBool
@@ -162,6 +178,9 @@ public class Config extends ConfigBase
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     public KeyBind keyToggleFullscreen = new KeyBind(Keyboard.KEY_NUMPAD7, false, false, false, false);
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    public KeyBind keyPurgeRerender = new KeyBind(Keyboard.KEY_NUMPAD1, false, false, false, false);
 
     public Config(File file)
     {

@@ -77,4 +77,10 @@ public class LogHandler extends BlockPeripheralHandler
         }
         return triesLeft - 1;
     }
+
+    @Override
+    public boolean requireThread()
+    {
+        return true;
+    }
 }

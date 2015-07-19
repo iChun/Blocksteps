@@ -114,7 +114,7 @@ public class BlockStepHandler
                 renderPos.add(pos);
             }
 
-            addPeripherals(world, renderPos);
+            addPeripherals(world, pos, renderPos);
 
             if(markUpdate)
             {
@@ -126,7 +126,7 @@ public class BlockStepHandler
         }
     }
 
-    public static void addPeripherals(World world, List<BlockPos> renderPos)
+    public static void addPeripherals(World world, BlockPos oriPos, List<BlockPos> renderPos)
     {
         if(Blocksteps.config.stepPeripherals == 1)
         {
@@ -137,12 +137,22 @@ public class BlockStepHandler
                 IBlockState state = world.getBlockState(periph);
                 if(isBlockTypePeripheral(world, periph, state.getBlock(), state, renderPos))
                 {
-                    List<BlockPos> poses = getBlockPeripheralHandler(state.getBlock()).getRelativeBlocks(world, periph, state, renderPos);
-                    for(BlockPos pos1 : poses)
+                    if(getBlockPeripheralHandler(state.getBlock()).requireThread() && Blocksteps.eventHandler.threadCheckBlocks != null)
                     {
-                        if(!periphs.contains(pos1) && !renderPos.contains(pos1))
+                        synchronized(Blocksteps.eventHandler.threadCheckBlocks.checks)
                         {
-                            periphs.add(pos1);
+                            Blocksteps.eventHandler.threadCheckBlocks.checks.add(new CheckBlockInfo(world, oriPos, periph, state, getBlockPeripheralHandler(state.getBlock()), renderPos));
+                        }
+                    }
+                    else
+                    {
+                        List<BlockPos> poses = getBlockPeripheralHandler(state.getBlock()).getRelativeBlocks(world, periph, state, renderPos);
+                        for(BlockPos pos1 : poses)
+                        {
+                            if(!periphs.contains(pos1) && !renderPos.contains(pos1))
+                            {
+                                periphs.add(pos1);
+                            }
                         }
                     }
                 }
