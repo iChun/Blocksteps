@@ -14,7 +14,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.common.IPlantable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,7 +50,7 @@ public class BlockStepHandler
         if(add)
         {
             IBlockState state = entity.worldObj.getBlockState(pos);
-            if(state.getBlock().isAir(entity.worldObj, pos) || !(state.getBlock().isNormalCube(entity.worldObj, pos) || isAcceptableBlockType(state.getBlock())))
+            if(state.getBlock().isAir(entity.worldObj, pos) || !(state.getBlock().isNormalCube(entity.worldObj, pos) || isAcceptableBlockType(state.getBlock()) || !(entity instanceof EntityPlayer) && (entity.riddenByEntity instanceof EntityPlayer) && BlockLiquid.class.isInstance(state.getBlock())))
             {
                 add = false;
             }
@@ -100,7 +99,7 @@ public class BlockStepHandler
                             {
                                 BlockPos newPos = pos.add(i, j, k);
                                 IBlockState state = world.getBlockState(newPos);
-                                if(!(state.getBlock().isAir(world, newPos) || !(state.getBlock().isNormalCube(world, newPos) || isAcceptableBlockType(state.getBlock()))))
+                                if(!(state.getBlock().isAir(world, newPos) || !(state.getBlock().isNormalCube(world, newPos) || isAcceptableBlockType(state.getBlock()) || BlockLiquid.class.isInstance(state.getBlock()))))
                                 {
                                     renderPos.add(newPos);
                                 }
@@ -205,7 +204,6 @@ public class BlockStepHandler
         blockPeripheralRegistry.put(BlockGrass.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockHopper.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockJukebox.class, DEFAULT_GENERIC_HANDLER);
-        blockPeripheralRegistry.put(BlockLiquid.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockMelon.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockNote.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockPumpkin.class, DEFAULT_GENERIC_HANDLER);
@@ -227,6 +225,7 @@ public class BlockStepHandler
         blockPeripheralRegistry.put(BlockCactus.class, new VerticalGenericHandler(BlockCactus.class, 5));
         blockPeripheralRegistry.put(BlockCrops.class, new VerticalGenericHandler(BlockCrops.class, 2));
         blockPeripheralRegistry.put(BlockDoor.class, new VerticalGenericHandler(BlockDoor.class, 2));
+        blockPeripheralRegistry.put(BlockLiquid.class, new VerticalGenericHandler(BlockLiquid.class, 15));
         blockPeripheralRegistry.put(BlockPane.class, new VerticalGenericHandler(BlockPane.class, 5));
         blockPeripheralRegistry.put(BlockReed.class, new VerticalGenericHandler(BlockReed.class, 5));
 

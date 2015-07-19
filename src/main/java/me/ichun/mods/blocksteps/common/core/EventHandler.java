@@ -1,6 +1,7 @@
 package me.ichun.mods.blocksteps.common.core;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.gson.Gson;
 import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.blockaid.BlockStepHandler;
 import me.ichun.mods.blocksteps.common.render.RenderGlobalProxy;
@@ -457,6 +458,9 @@ public class EventHandler
                     {
                         fullscreen = !fullscreen;
                         targetOffsetX = targetOffsetY = prevOffsetX = prevOffsetY = offsetX = offsetY = 0F;
+
+//                        System.out.println(steps);
+//                        System.out.println((new Gson()).toJson(steps));
                     }
                 }
             }
