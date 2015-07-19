@@ -6,15 +6,25 @@ import org.lwjgl.input.Keyboard;
 import us.ichun.mods.ichunutil.client.keybind.KeyBind;
 import us.ichun.mods.ichunutil.common.core.config.ConfigBase;
 import us.ichun.mods.ichunutil.common.core.config.annotations.ConfigProp;
+import us.ichun.mods.ichunutil.common.core.config.annotations.IntBool;
 import us.ichun.mods.ichunutil.common.core.config.annotations.IntMinMax;
+import us.ichun.mods.ichunutil.common.core.config.types.Colour;
 
 import java.io.File;
 
 public class Config extends ConfigBase
 {
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
-    @IntMinMax(min = 0, max = 10000)
-    public int blockCount = 500;
+    @IntMinMax(min = 0, max = 1000000)
+    public int renderBlockCount = 1000;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 0, max = 32)
+    public int renderDistance = 4;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int renderSky = 1;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = -180, max = 180)
@@ -41,12 +51,61 @@ public class Config extends ConfigBase
     public int camZoom = 10;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
-    @IntMinMax(min = 0, max = 100)
-    public int camPosX = 90;
+    @IntMinMax(min = -500, max = 500)
+    public int camPosX = 50;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = -500, max = 500)
+    public int camPosY = 50;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 0, max = 1)
+    public int mapType = 0;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int mapShowEntities = 0;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 0, max = 100)
-    public int camPosY = 85;
+    public int mapStartX = 70;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 0, max = 100)
+    public int mapStartY = 2;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 0, max = 100)
+    public int mapEndX = 99;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 0, max = 100)
+    public int mapEndY = 30;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 0, max = 100)
+    public int mapBorderOpacity = 100;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int mapBorderOutline = 1;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    public Colour mapBorderOutlineColour = new Colour(150, 150, 150);
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 1, max = 100)
+    public int mapBorderSize = 1;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    public Colour mapBorderColour = new Colour(34, 34, 34);
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 0, max = 100)
+    public int mapBackgroundOpacity = 70;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    public Colour mapBackgroundColour = new Colour(0);
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     public KeyBind keyCamUp = new KeyBind(Keyboard.KEY_UP, false, true, false, false);

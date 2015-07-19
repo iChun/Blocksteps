@@ -34,6 +34,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 import us.ichun.mods.ichunutil.client.keybind.KeyEvent;
+import us.ichun.mods.ichunutil.client.render.RendererHelper;
 import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
 
 import java.util.List;
@@ -49,62 +50,55 @@ public class EventHandler
             if(mc.thePlayer != null && !mc.gameSettings.hideGUI /*&& (mc.currentScreen == null || mc.currentScreen instanceof GuiChat)*/)
             {
                 ScaledResolution reso = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
-
-                double posX = reso.getScaledWidth() * (float)Blocksteps.config.camPosX / 100F;
-                double posY = reso.getScaledHeight() * (float)Blocksteps.config.camPosY / 100F;
                 float aScale = EntityHelperBase.interpolateValues(prevScale, scale, event.renderTickTime) / 10F;
 
-                if(aScale > 0F)
+                if(aScale > 0.0001F)
                 {
-                    EntityLivingBase ent = mc.thePlayer;
-                    GlStateManager.enableColorMaterial();
-                    GlStateManager.pushMatrix();
-                    GlStateManager.translate((float)posX, (float)posY, 50.0F);
-                    GlStateManager.scale(-aScale, aScale, aScale);
-                    GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);
+                    GlStateManager.enableBlend();
+                    GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                    GlStateManager.enableAlpha();
+                    GlStateManager.alphaFunc(GL11.GL_GREATER, 0.00625F);
+                    int x = (int)(reso.getScaledWidth_double() * (Blocksteps.config.mapStartX / 100D));
+                    int y = (int)(reso.getScaledHeight_double() * (Blocksteps.config.mapStartY / 100D));
+                    int width = (int)(reso.getScaledWidth_double() * ((Blocksteps.config.mapEndX - Blocksteps.config.mapStartX) / 100D));
+                    int height = (int)(reso.getScaledHeight_double() * ((Blocksteps.config.mapEndY - Blocksteps.config.mapStartY) / 100D));
+                    float alphaAmp = MathHelper.clamp_float(aScale / 0.1F, 0F, 1F);
 
-                    GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleX, angleX, event.renderTickTime), 1.0F, 0.0F, 0.0F);
-                    GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleY, angleY, event.renderTickTime), 0.0F, 1.0F, 0.0F);
-
-                    renderWorld(mc, event.renderTickTime);
-
-                    RenderHelper.enableStandardItemLighting();
-
-                    if(ent instanceof EntityDragon)
+                    if(Blocksteps.config.mapBackgroundOpacity > 0)
                     {
-                        GlStateManager.rotate(180F, 0.0F, 1.0F, 0.0F);
+                        RendererHelper.drawColourOnScreen(Blocksteps.config.mapBackgroundColour.getColour(), (int)((float)Blocksteps.config.mapBackgroundOpacity / 100F * 255F * alphaAmp), x, y, width, height, -200D);
                     }
-                    RenderManager rendermanager = Minecraft.getMinecraft().getRenderManager();
-                    float viewY = rendermanager.playerViewY;
-                    rendermanager.setPlayerViewY(180.0F);
-                    rendermanager.renderEntityWithPosYaw(ent, 0.0D, 0.0D, 0.0D, 0.0F, event.renderTickTime);
-                    if(ent instanceof EntityDragon)
+                    if(Blocksteps.config.mapBorderOpacity > 0)
                     {
-                        GlStateManager.rotate(180F, 0.0F, -1.0F, 0.0F);
+                        int borderOpacity = (int)((float)Blocksteps.config.mapBorderOpacity / 100F * 255F * alphaAmp);
+                        int size = Blocksteps.config.mapBorderSize;
+                        if(Blocksteps.config.mapBorderOutline == 1)
+                        {
+                            size += 1;
+                            RendererHelper.drawColourOnScreen(Blocksteps.config.mapBorderOutlineColour.getColour(), borderOpacity, x - size, y - size, size, height + (size * 2D), 0D);
+                            RendererHelper.drawColourOnScreen(Blocksteps.config.mapBorderOutlineColour.getColour(), borderOpacity, x, y - size, width, size, 0D);
+                            RendererHelper.drawColourOnScreen(Blocksteps.config.mapBorderOutlineColour.getColour(), borderOpacity, x + width, y - size, size, height + (size * 2D), 0D);
+                            RendererHelper.drawColourOnScreen(Blocksteps.config.mapBorderOutlineColour.getColour(), borderOpacity, x, y + height, width, size, 0D);
+                            size -= 1;
+                            RendererHelper.drawColourOnScreen(Blocksteps.config.mapBorderColour.getColour(), borderOpacity, x - size - 0.5D, y - size - 0.5D, size, height + (size * 2D) + 1, 0D);
+                            RendererHelper.drawColourOnScreen(Blocksteps.config.mapBorderColour.getColour(), borderOpacity, x - 0.5D, y - size - 0.5D, width + 1D, size, 0D);
+                            RendererHelper.drawColourOnScreen(Blocksteps.config.mapBorderColour.getColour(), borderOpacity, x + width + 0.5D, y - size - 0.5D, size, height + (size * 2D) + 1, 0D);
+                            RendererHelper.drawColourOnScreen(Blocksteps.config.mapBorderColour.getColour(), borderOpacity, x - 0.5D, y + height + 0.5D, width + 1D, size, 0D);
+                        }
+                        else
+                        {
+                            RendererHelper.drawColourOnScreen(Blocksteps.config.mapBorderColour.getColour(), borderOpacity, x - size, y - size, size, height + (size * 2D), 0D);
+                            RendererHelper.drawColourOnScreen(Blocksteps.config.mapBorderColour.getColour(), borderOpacity, x, y - size, width, size, 0D);
+                            RendererHelper.drawColourOnScreen(Blocksteps.config.mapBorderColour.getColour(), borderOpacity, x + width, y - size, size, height + (size * 2D), 0D);
+                            RendererHelper.drawColourOnScreen(Blocksteps.config.mapBorderColour.getColour(), borderOpacity, x, y + height, width, size, 0D);
+                        }
                     }
 
-                    Entity ridden = ent.riddenByEntity;
-                    while(ridden != null)
-                    {
-                        rendermanager.renderEntityWithPosYaw(ridden, ridden.posX - ent.posX, ridden.posY - ent.posY, ridden.posZ - ent.posZ, 0.0F, event.renderTickTime);
-                        ridden = ridden.riddenByEntity;
-                    }
-
-                    ridden = ent.ridingEntity;
-                    while(ridden != null)
-                    {
-                        rendermanager.renderEntityWithPosYaw(ridden, ridden.posX - ent.posX, ridden.posY - ent.posY, ridden.posZ - ent.posZ, 0.0F, event.renderTickTime);
-                        ridden = ridden.ridingEntity;
-                    }
-
-                    rendermanager.setPlayerViewY(viewY);
-
-                    GlStateManager.popMatrix();
-                    RenderHelper.disableStandardItemLighting();
-                    GlStateManager.disableRescaleNormal();
-                    GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
-                    GlStateManager.disableTexture2D();
-                    GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+                    RendererHelper.startGlScissor(x, y, width, height);
+                    drawMap(mc, reso, x, y, width, height, aScale, event.renderTickTime);
+                    RendererHelper.endGlScissor();
+                    GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
+                    GlStateManager.disableAlpha();
                 }
             }
         }
@@ -117,6 +111,62 @@ public class EventHandler
                 //TODO set up saving here
             }
         }
+    }
+
+    public void drawMap(Minecraft mc, ScaledResolution reso, int x, int y, int width, int height, float aScale, float partialTicks)
+    {
+        double posX = x + width * (float)Blocksteps.config.camPosX / 100F;
+        double posY = y + height * (float)Blocksteps.config.camPosY / 100F;
+
+        EntityLivingBase ent = mc.thePlayer;
+        GlStateManager.enableColorMaterial();
+        GlStateManager.pushMatrix();
+        GlStateManager.translate((float)posX, (float)posY, 200.0F);
+        GlStateManager.scale(-aScale, aScale, aScale);
+        GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);
+
+        GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleX, angleX, partialTicks), 1.0F, 0.0F, 0.0F);
+        GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleY, angleY, partialTicks), 0.0F, 1.0F, 0.0F);
+
+        renderWorld(mc, partialTicks);
+
+        RenderHelper.enableStandardItemLighting();
+
+        if(ent instanceof EntityDragon)
+        {
+            GlStateManager.rotate(180F, 0.0F, 1.0F, 0.0F);
+        }
+        RenderManager rendermanager = Minecraft.getMinecraft().getRenderManager();
+        float viewY = rendermanager.playerViewY;
+        rendermanager.setPlayerViewY(180.0F);
+        rendermanager.renderEntityWithPosYaw(ent, 0.0D, 0.0D, 0.0D, 0.0F, partialTicks);
+        if(ent instanceof EntityDragon)
+        {
+            GlStateManager.rotate(180F, 0.0F, -1.0F, 0.0F);
+        }
+
+        Entity ridden = ent.riddenByEntity;
+        while(ridden != null)
+        {
+            rendermanager.renderEntityWithPosYaw(ridden, ridden.posX - ent.posX, ridden.posY - ent.posY, ridden.posZ - ent.posZ, 0.0F, partialTicks);
+            ridden = ridden.riddenByEntity;
+        }
+
+        ridden = ent.ridingEntity;
+        while(ridden != null)
+        {
+            rendermanager.renderEntityWithPosYaw(ridden, ridden.posX - ent.posX, ridden.posY - ent.posY, ridden.posZ - ent.posZ, 0.0F, partialTicks);
+            ridden = ridden.ridingEntity;
+        }
+
+        rendermanager.setPlayerViewY(viewY);
+
+        GlStateManager.popMatrix();
+        RenderHelper.disableStandardItemLighting();
+        GlStateManager.disableRescaleNormal();
+        GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+        GlStateManager.disableTexture2D();
+        GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
     }
 
     public void renderWorld(Minecraft mc, float partialTicks)
@@ -135,13 +185,32 @@ public class EventHandler
             int pass = 2;
 
             GlStateManager.shadeModel(GL11.GL_SMOOTH);
-            mc.getTextureManager().bindTexture(TextureMap.locationBlocksTexture);
             Frustum frustum = new Frustum();
             double d0 = entity.lastTickPosX + (entity.posX - entity.lastTickPosX) * (double)partialTicks;
             double d1 = entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * (double)partialTicks;
             double d2 = entity.lastTickPosZ + (entity.posZ - entity.lastTickPosZ) * (double)partialTicks;
             frustum.setPosition(d0, d1, d2);
+
+            if(Blocksteps.config.renderSky == 1)
+            {
+                float aScale = 0.5F;
+                GlStateManager.disableCull();
+                GlStateManager.pushMatrix();
+                GlStateManager.scale(aScale, aScale, aScale);
+                renderglobal.renderSky(partialTicks, pass);
+                GlStateManager.disableFog();
+                GlStateManager.popMatrix();
+                GlStateManager.enableCull();
+                GlStateManager.shadeModel(GL11.GL_SMOOTH);
+                GlStateManager.enableBlend();
+                GlStateManager.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+            }
+
+            GlStateManager.color(1F, 1F, 1F, 1F);
+            mc.getTextureManager().bindTexture(TextureMap.locationBlocksTexture);
+            ((RenderGlobalProxy)renderglobal).setupTerrain = renderglobal.renderDistanceChunks == Blocksteps.config.renderDistance;
             renderglobal.setupTerrain(entity, (double)partialTicks, frustum, frameCount++, mc.thePlayer.isSpectator());
+            ((RenderGlobalProxy)renderglobal).setupTerrain = false;
             int i = Math.max(Minecraft.getDebugFPS(), 30);
             renderglobal.updateChunks(System.nanoTime() + (long)(1000000000 / i));
             GlStateManager.matrixMode(GL11.GL_MODELVIEW);
@@ -215,7 +284,7 @@ public class EventHandler
 
                 //TODO a block radius reveal?
                 List<BlockPos> steps = getSteps(mc.theWorld.provider.getDimensionId());
-                while(steps.size() > Blocksteps.config.blockCount)
+                while(steps.size() > Blocksteps.config.renderBlockCount)
                 {
                     BlockPos pos = steps.get(0);
                     steps.remove(0);

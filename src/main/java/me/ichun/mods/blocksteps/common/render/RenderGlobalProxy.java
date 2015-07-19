@@ -1,40 +1,39 @@
 package me.ichun.mods.blocksteps.common.render;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import me.ichun.mods.blocksteps.common.Blocksteps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.chunk.ListChunkFactory;
+import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.client.renderer.chunk.VboChunkFactory;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.culling.ICamera;
+import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.MathHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
+
+import javax.vecmath.Vector3f;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Set;
 
 @SideOnly(Side.CLIENT)
 public class RenderGlobalProxy extends RenderGlobal
 {
-    private boolean renderSky;
+    public boolean setupTerrain = false;
 
     public RenderGlobalProxy(Minecraft par1Minecraft)
     {
         super(par1Minecraft);
-        renderSky = true;
-    }
-
-    public RenderGlobalProxy setRenderSky(boolean flag)
-    {
-        renderSky = flag;
-        return this;
-    }
-
-    @Override
-    public void updateClouds()
-    {
-        if(renderSky)
-        {
-            super.updateClouds();
-        }
     }
 
     @Override
@@ -48,50 +47,26 @@ public class RenderGlobalProxy extends RenderGlobal
     }
 
     @Override
-    public void renderSky(float par1, int pass)
-    {
-        if(renderSky)
-        {
-            super.renderSky(par1, pass);
-        }
-    }
-
-    @Override
-    public void renderClouds(float par1, int pass)
-    {
-        if(renderSky)
-        {
-            super.renderClouds(par1, pass);
-        }
-    }
-
-    @Override
-    public boolean hasCloudFog(double par1, double par3, double par5, float par7)
-    {
-        if(renderSky)
-        {
-            return super.hasCloudFog(par1, par3, par5, par7);
-        }
-        return false;
-    }
-
-    @Override
-    public void renderCloudsFancy(float par1, int pass)
-    {
-        if(renderSky)
-        {
-            super.renderCloudsFancy(par1, pass);
-        }
-    }
-
-    @Override
     public void loadRenderers()
     {
-        super.loadRenderers();
-        if (this.theWorld != null)
+        if (this.theWorld != null && !setupTerrain)
         {
+            this.displayListEntitiesDirty = true;
+            Blocks.leaves.setGraphicsLevel(this.mc.gameSettings.fancyGraphics);
+            Blocks.leaves2.setGraphicsLevel(this.mc.gameSettings.fancyGraphics);
+            this.renderDistanceChunks = Blocksteps.config.renderDistance > 0 ? Blocksteps.config.renderDistance : this.mc.gameSettings.renderDistanceChunks;
+            boolean flag = this.vboEnabled;
+            this.vboEnabled = OpenGlHelper.useVbo();
+
             this.renderContainer = new RenderList();
             this.renderChunkFactory = new ListChunkFactoryBlocksteps();
+
+            if (flag != this.vboEnabled)
+            {
+                this.generateStars();
+                this.generateSky();
+                this.generateSky2();
+            }
 
             if (this.viewFrustum != null)
             {
@@ -101,14 +76,69 @@ public class RenderGlobalProxy extends RenderGlobal
             this.stopChunkUpdates();
             this.viewFrustum = new ViewFrustum(this.theWorld, this.mc.gameSettings.renderDistanceChunks, this, this.renderChunkFactory);
 
-            Entity entity = this.mc.getRenderViewEntity();
-
-            if (entity != null)
+            if (this.theWorld != null)
             {
-                this.viewFrustum.updateChunkPositions(entity.posX, entity.posZ);
+                Entity entity = this.mc.getRenderViewEntity();
+
+                if (entity != null)
+                {
+                    this.viewFrustum.updateChunkPositions(entity.posX, entity.posZ);
+                }
             }
 
             this.renderEntitiesStartupCounter = 2;
+        }
+    }
+
+    @Override
+    public void generateSky2()
+    {
+        if (this.sky2VBO != null)
+        {
+            this.sky2VBO.deleteGlBuffers();
+        }
+
+        if (this.glSkyList2 >= 0)
+        {
+            GLAllocation.deleteDisplayLists(this.glSkyList2);
+            this.glSkyList2 = -1;
+        }
+
+        if (this.vboEnabled)
+        {
+            this.sky2VBO = new VertexBuffer(this.vertexBufferFormat);
+        }
+        else
+        {
+            this.glSkyList2 = GLAllocation.generateDisplayLists(1);
+            GL11.glNewList(this.glSkyList2, GL11.GL_COMPILE);
+            GL11.glEndList();
+        }
+    }
+
+    @Override
+    public void generateSky()
+    {
+        if (this.skyVBO != null)
+        {
+            this.skyVBO.deleteGlBuffers();
+        }
+
+        if (this.glSkyList >= 0)
+        {
+            GLAllocation.deleteDisplayLists(this.glSkyList);
+            this.glSkyList = -1;
+        }
+
+        if (this.vboEnabled)
+        {
+            this.skyVBO = new VertexBuffer(this.vertexBufferFormat);
+        }
+        else
+        {
+            this.glSkyList = GLAllocation.generateDisplayLists(1);
+            GL11.glNewList(this.glSkyList, GL11.GL_COMPILE);
+            GL11.glEndList();
         }
     }
 
