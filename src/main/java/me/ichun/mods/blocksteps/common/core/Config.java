@@ -16,7 +16,7 @@ public class Config extends ConfigBase
 {
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 0, max = 1000000)
-    public int renderBlockCount = 1000;
+    public int renderBlockCount = 5000;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 0, max = 32)
@@ -25,6 +25,14 @@ public class Config extends ConfigBase
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntBool
     public int renderSky = 1;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int renderCompass = 0;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 200)
+    public int saveInterval = 20 * 60 * 5;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntBool

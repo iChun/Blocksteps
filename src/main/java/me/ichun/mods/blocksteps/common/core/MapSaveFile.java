@@ -5,6 +5,7 @@ import me.ichun.mods.blocksteps.common.Blocksteps;
 import net.minecraft.util.BlockPos;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.TreeMap;
 
 public class MapSaveFile
@@ -21,5 +22,14 @@ public class MapSaveFile
         file.stepPoints.putAll(Blocksteps.eventHandler.steps.asMap());
 
         return file;
+    }
+
+    public void load()
+    {
+        Blocksteps.eventHandler.steps.clear();
+        for(Map.Entry<Integer, Collection<BlockPos>> e : stepPoints.entrySet())
+        {
+            Blocksteps.eventHandler.steps.get(e.getKey()).addAll(e.getValue());
+        }
     }
 }

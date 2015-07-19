@@ -1,6 +1,7 @@
 blocksteps.config.prop.renderBlockCount.name=Maximum blocks to count per server.
 blocksteps.config.prop.renderDistance.name=Maximum chunks for rendering.
 blocksteps.config.prop.renderSky.name=Render Sky
+blocksteps.config.prop.renderCompass.name=Render Arrow Compass
 blocksteps.config.prop.stepRadius.name=Step Radius
 blocksteps.config.prop.trackOtherPlayers.name=Track other players
 blocksteps.config.prop.hideNamePlates.name=Hide Name Plates
@@ -48,6 +49,7 @@ blocksteps.config.prop.keyPurgeRerender.name=Purge Rerender
 blocksteps.config.prop.renderBlockCount.comment=The maximum number of blocks to track on each server for rendering.
 blocksteps.config.prop.renderDistance.comment=Maximum chunks for rendering.\n0 = Minecraft default\nI would recommend 6 as a render distance since this is a minimap.
 blocksteps.config.prop.renderSky.comment=Render the sky?
+blocksteps.config.prop.renderCompass.comment=Render an arrow compass that constantly faces north?
 blocksteps.config.prop.trackOtherPlayers.comment=Should we track other players on the map as well?
 blocksteps.config.prop.hideNamePlates.comment=Enable "Hide GUI" when rendering the mini-map to hide player names?
 blocksteps.config.prop.lockMapToHeadYaw.comment=Lock the map to the player's look direction (yaw)?

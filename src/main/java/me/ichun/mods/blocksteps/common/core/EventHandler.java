@@ -1,6 +1,8 @@
 package me.ichun.mods.blocksteps.common.core;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.io.ByteStreams;
+import com.google.gson.Gson;
 import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.blockaid.BlockStepHandler;
 import me.ichun.mods.blocksteps.common.blockaid.CheckBlockInfo;
@@ -15,10 +17,12 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumWorldBlockLayer;
 import net.minecraft.util.MathHelper;
@@ -32,7 +36,10 @@ import org.lwjgl.opengl.GL11;
 import us.ichun.mods.ichunutil.client.keybind.KeyEvent;
 import us.ichun.mods.ichunutil.client.render.RendererHelper;
 import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
+import us.ichun.mods.ichunutil.common.core.util.IOUtil;
+import us.ichun.mods.ichunutil.common.core.util.ResourceHelper;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -114,6 +121,34 @@ public class EventHandler
                     RendererHelper.startGlScissor(x, y, width, height);
                     drawMap(mc, reso, x, y, width, height, aScale, event.renderTickTime);
                     RendererHelper.endGlScissor();
+
+                    if(Blocksteps.config.renderCompass == 1)
+                    {
+                        GlStateManager.disableDepth();
+                        GlStateManager.depthMask(false);
+                        GlStateManager.disableLighting();
+
+                        GlStateManager.enableColorMaterial();
+                        GlStateManager.pushMatrix();
+                        GlStateManager.translate((float)x + width - 6F, (float)y + height - 6F, 50.0F);
+                        float arrowScale = 8F * alphaAmp;
+                        GlStateManager.scale(-arrowScale, arrowScale, arrowScale);
+                        GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);
+                        GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleX, angleX, event.renderTickTime), 1.0F, 0.0F, 0.0F);
+                        GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleY, angleY, event.renderTickTime), 0.0F, 1.0F, 0.0F);
+                        RenderManager rendermanager = Minecraft.getMinecraft().getRenderManager();
+                        rendermanager.renderEntityWithPosYaw(arrowCompass, 0.0D, 0.0D, 0.0D, 0.0F, event.renderTickTime);
+                        GlStateManager.popMatrix();
+                        GlStateManager.disableRescaleNormal();
+                        GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+                        GlStateManager.disableTexture2D();
+                        GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+
+                        GlStateManager.enableLighting();
+                        GlStateManager.depthMask(true);
+                        GlStateManager.enableDepth();
+                    }
+
                     GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
                     GlStateManager.disableAlpha();
                 }
@@ -146,6 +181,22 @@ public class EventHandler
         {
             if(renderGlobalProxy != null && renderGlobalProxy.theWorld != null && mc.theWorld == null)
             {
+                if(saveLocation != null)
+                {
+                    saveLocation.getParentFile().mkdirs();
+                    try
+                    {
+                        FileOutputStream stream = new FileOutputStream(saveLocation);
+                        stream.write(IOUtil.compress((new Gson()).toJson(MapSaveFile.create())));
+                        stream.close();
+                    }
+                    catch(Exception e)
+                    {
+                        Blocksteps.logger.warn("Error saving file: " + saveLocation);
+                    }
+
+                    saveLocation = null;
+                }
                 setNewWorld(null);
                 steps.clear();
                 blocksToRenderByStep.clear();
@@ -154,7 +205,31 @@ public class EventHandler
                 {
                     Blocksteps.eventHandler.threadCheckBlocks.checks.clear();
                 }
-                //TODO set up saving here
+            }
+            if(mc.theWorld != null)
+            {
+                if(attemptLocalLoad)
+                {
+                    attemptLocalLoad = false;
+                    saveLocation = new File(new File(ResourceHelper.getModsFolder(), "/blocksteps/local/"), mc.theWorld.getSpawnPoint().hashCode() + ".bsv");
+                    if(saveLocation.exists())
+                    {
+                        try
+                        {
+                            byte[] data = new byte[(int)saveLocation.length()];
+                            FileInputStream stream = new FileInputStream(saveLocation);
+                            stream.read(data);
+                            stream.close();
+                            MapSaveFile save = (new Gson()).fromJson(IOUtil.decompress(data), MapSaveFile.class);
+                            save.load();
+                        }
+                        catch(Exception e)
+                        {
+                            Blocksteps.logger.warn("Error loading save file: " + saveLocation);
+                        }
+                        ;
+                    }
+                }
             }
         }
     }
@@ -313,13 +388,16 @@ public class EventHandler
                 offsetX = offsetX + (targetOffsetX - offsetX) * 0.4F;
                 offsetY = offsetY + (targetOffsetY - offsetY) * 0.4F;
 
-                if(Blocksteps.config.lockMapToHeadYaw == 1)
+                if(!fullscreen)
                 {
-                    targetAngleY = angleY = mc.getRenderViewEntity().rotationYaw + 180F;
-                }
-                if(Blocksteps.config.lockMapToHeadPitch == 1)
-                {
-                    targetAngleX = angleX = mc.getRenderViewEntity().rotationPitch;
+                    if(Blocksteps.config.lockMapToHeadYaw == 1)
+                    {
+                        targetAngleY = angleY = mc.getRenderViewEntity().rotationYaw + 180F;
+                    }
+                    if(Blocksteps.config.lockMapToHeadPitch == 1)
+                    {
+                        targetAngleX = angleX = mc.getRenderViewEntity().rotationPitch;
+                    }
                 }
 
                 if(renderGlobalProxy != null && (Math.abs(targetAngleX - angleX) > 0.01D || Math.abs(targetAngleY - angleY) > 0.01D || Math.abs(targetScale - scale) > 0.01D))
@@ -373,6 +451,26 @@ public class EventHandler
                         blocksToRender.addAll(blocksToRenderByStep.get(pos));
                     }
                 }
+
+                if(--saveTimeout == 0)
+                {
+                    saveTimeout = Blocksteps.config.saveInterval;
+
+                    if(saveLocation != null)
+                    {
+                        saveLocation.getParentFile().mkdirs();
+                        try
+                        {
+                            FileOutputStream stream = new FileOutputStream(saveLocation);
+                            stream.write(IOUtil.compress((new Gson()).toJson(MapSaveFile.create())));
+                            stream.close();
+                        }
+                        catch(Exception e)
+                        {
+                            Blocksteps.logger.warn("Error saving file: " + saveLocation);
+                        }
+                    }
+                }
             }
         }
     }
@@ -384,8 +482,33 @@ public class EventHandler
         Blocksteps.eventHandler.targetAngleY = Blocksteps.eventHandler.prevAngleY = Blocksteps.eventHandler.angleY = Blocksteps.eventHandler.oriAngleY = Blocksteps.config.camStartHorizontal;
         Blocksteps.eventHandler.targetScale = Blocksteps.config.camStartScale;
         Blocksteps.eventHandler.prevScale = Blocksteps.eventHandler.scale = 0;
+        saveTimeout = Blocksteps.config.saveInterval;
 
-        System.out.println(event.manager.getRemoteAddress());
+        String connectionName = event.manager.getRemoteAddress().toString();
+        if(connectionName.contains("/")) //probably a public server
+        {
+            saveLocation = new File(new File(ResourceHelper.getModsFolder(), "/blocksteps/"), connectionName.substring(0, connectionName.indexOf("/")) + "_" + connectionName.substring(connectionName.indexOf(":") + 1, connectionName.length()) + ".bsv");
+            if(saveLocation.exists())
+            {
+                try
+                {
+                    byte[] data = new byte[(int)saveLocation.length()];
+                    FileInputStream stream = new FileInputStream(saveLocation);
+                    stream.read(data);
+                    stream.close();
+                    MapSaveFile save = (new Gson()).fromJson(IOUtil.decompress(data), MapSaveFile.class);
+                    save.load();
+                }
+                catch(Exception e)
+                {
+                    Blocksteps.logger.warn("Error loading save file: " + saveLocation);
+                };
+            }
+        }
+        else if(connectionName.startsWith("local"))
+        {
+            attemptLocalLoad = true;
+        }
     }
 
     @SubscribeEvent
@@ -411,6 +534,8 @@ public class EventHandler
             renderGlobalProxy = new RenderGlobalProxy(Minecraft.getMinecraft());
             threadCheckBlocks = new ThreadCheckBlocks();
             threadCheckBlocks.start();
+
+            arrowCompass.prevRotationYaw = arrowCompass.rotationYaw = 180F;
         }
 
         renderGlobalProxy.setWorldAndLoadRenderers(world);
@@ -516,7 +641,7 @@ public class EventHandler
                 }
                 else if(event.keyBind.equals(Blocksteps.config.keyPurgeRerender))
                 {
-                    purgeRerender = true;
+                    repopulateBlocksToRender = purgeRerender = true;
                 }
             }
         }
@@ -556,10 +681,16 @@ public class EventHandler
 
     public ArrayListMultimap<Integer, BlockPos> steps = ArrayListMultimap.create();
 
+    public EntityArrow arrowCompass = new EntityArrow(null);
+
     public ArrayListMultimap<BlockPos, BlockPos> blocksToRenderByStep = ArrayListMultimap.create();
     public boolean repopulateBlocksToRender = false;
     public HashSet<BlockPos> blocksToRender = new HashSet<BlockPos>();
     public final List<CheckBlockInfo> blocksToAdd = Collections.synchronizedList(new ArrayList<CheckBlockInfo>());
     public boolean purgeRerender;
 
+    public boolean attemptLocalLoad;
+
+    public File saveLocation;
+    public int saveTimeout;
 }
