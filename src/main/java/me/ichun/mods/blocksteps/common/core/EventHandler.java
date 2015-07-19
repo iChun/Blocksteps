@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.boss.EntityDragon;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumWorldBlockLayer;
 import net.minecraft.util.MathHelper;
@@ -59,6 +60,13 @@ public class EventHandler
                     int y = (int)(reso.getScaledHeight_double() * (Blocksteps.config.mapStartY / 100D));
                     int width = (int)(reso.getScaledWidth_double() * ((Blocksteps.config.mapEndX - Blocksteps.config.mapStartX) / 100D));
                     int height = (int)(reso.getScaledHeight_double() * ((Blocksteps.config.mapEndY - Blocksteps.config.mapStartY) / 100D));
+                    if(fullscreen)
+                    {
+                        x = (int)(reso.getScaledWidth_double() * 0.01D);
+                        y = (int)(reso.getScaledHeight_double() * 0.02D);
+                        width = (int)(reso.getScaledWidth_double() * 0.98D);
+                        height = (int)(reso.getScaledHeight_double() * 0.96D);
+                    }
                     float alphaAmp = MathHelper.clamp_float(aScale / 0.1F, 0F, 1F);
 
                     if(Blocksteps.config.mapBackgroundOpacity > 0)
@@ -125,51 +133,23 @@ public class EventHandler
         EntityLivingBase ent = mc.thePlayer;
         GlStateManager.enableColorMaterial();
         GlStateManager.pushMatrix();
-        GlStateManager.translate((float)posX, (float)posY , 200.0F);
+        GlStateManager.translate((float)posX, (float)posY, 200.0F);
+        if(fullscreen)
+        {
+            GlStateManager.translate(EntityHelperBase.interpolateValues(prevOffsetX, offsetX, partialTicks), EntityHelperBase.interpolateValues(prevOffsetY, offsetY, partialTicks), 0F);
+        }
         GlStateManager.scale(-aScale, aScale, aScale);
         GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);
 
         GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleX, angleX, partialTicks), 1.0F, 0.0F, 0.0F);
         GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleY, angleY, partialTicks), 0.0F, 1.0F, 0.0F);
 
-        GlStateManager.translate(0F, -mc.thePlayer.getEyeHeight(), 0F);
+        GlStateManager.translate(0, -mc.thePlayer.getEyeHeight(), 0F);
 
         renderWorld(mc, partialTicks);
 
-        RenderHelper.enableStandardItemLighting();
-
-        RenderManager rendermanager = Minecraft.getMinecraft().getRenderManager();
-        float viewY = rendermanager.playerViewY;
-
-        if(!(mc.gameSettings.thirdPersonView != 0 && Blocksteps.config.mapShowEntities == 1))
-        {
-            if(ent instanceof EntityDragon)
-            {
-                GlStateManager.rotate(180F, 0.0F, 1.0F, 0.0F);
-            }
-            rendermanager.setPlayerViewY(180.0F);
-            rendermanager.renderEntityWithPosYaw(ent, 0.0D, 0.0D, 0.0D, 0.0F, partialTicks);
-            if(ent instanceof EntityDragon)
-            {
-                GlStateManager.rotate(180F, 0.0F, -1.0F, 0.0F);
-            }
-        }
-
-        Entity ridden = ent.riddenByEntity;
-        while(ridden != null)
-        {
-            rendermanager.renderEntityWithPosYaw(ridden, ridden.posX - ent.posX, ridden.posY - ent.posY, ridden.posZ - ent.posZ, 0.0F, partialTicks);
-            ridden = ridden.riddenByEntity;
-        }
-
-        ridden = ent.ridingEntity;
-        while(ridden != null)
-        {
-            rendermanager.renderEntityWithPosYaw(ridden, ridden.posX - ent.posX, ridden.posY - ent.posY, ridden.posZ - ent.posZ, 0.0F, partialTicks);
-            ridden = ridden.ridingEntity;
-        }
-
-        rendermanager.setPlayerViewY(viewY);
+        GlStateManager.enableLighting();
+        GlStateManager.enableNormalize();
 
         GlStateManager.popMatrix();
         RenderHelper.disableStandardItemLighting();
@@ -287,10 +267,14 @@ public class EventHandler
                 prevAngleX = angleX;
                 prevAngleY = angleY;
                 prevScale = scale;
+                prevOffsetX = offsetX;
+                prevOffsetY = offsetY;
 
                 angleX = angleX + (targetAngleX - angleX) * 0.4F;
                 angleY = angleY + (targetAngleY - angleY) * 0.4F;
                 scale = scale + (targetScale - scale) * 0.4F;
+                offsetX = offsetX + (targetOffsetX - offsetX) * 0.4F;
+                offsetY = offsetY + (targetOffsetY - offsetY) * 0.4F;
 
                 if(renderGlobalProxy != null && (Math.abs(targetAngleX - angleX) > 0.01D || Math.abs(targetAngleY - angleY) > 0.01D || Math.abs(targetScale - scale) > 0.01D))
                 {
@@ -310,13 +294,20 @@ public class EventHandler
                     }
                 }
                 ArrayList<Entity> entitiesToTrack = new ArrayList<Entity>();
-                if(mc.thePlayer.ridingEntity != null)
+                for(int i = 0; i < mc.theWorld.playerEntities.size(); i++)
                 {
-                    entitiesToTrack.add(mc.thePlayer.ridingEntity);
-                }
-                else
-                {
-                    entitiesToTrack.add(mc.thePlayer);
+                    EntityPlayer player = (EntityPlayer)mc.theWorld.playerEntities.get(i);
+                    if(player == mc.thePlayer || Blocksteps.config.trackOtherPlayers == 1)
+                    {
+                        if(player.ridingEntity != null)
+                        {
+                            entitiesToTrack.add(player.ridingEntity);
+                        }
+                        else
+                        {
+                            entitiesToTrack.add(player);
+                        }
+                    }
                 }
                 for(Entity ent : entitiesToTrack)
                 {
@@ -343,7 +334,7 @@ public class EventHandler
     public void onClientConnect(FMLNetworkEvent.ClientConnectedToServerEvent event)
     {
         Blocksteps.eventHandler.targetAngleX = Blocksteps.eventHandler.prevAngleX = Blocksteps.eventHandler.angleX = Blocksteps.config.camStartVertical;
-        Blocksteps.eventHandler.targetAngleY = Blocksteps.eventHandler.prevAngleY = Blocksteps.eventHandler.angleY = Blocksteps.eventHandler.oriY = Blocksteps.config.camStartHorizontal;
+        Blocksteps.eventHandler.targetAngleY = Blocksteps.eventHandler.prevAngleY = Blocksteps.eventHandler.angleY = Blocksteps.eventHandler.oriAngleY = Blocksteps.config.camStartHorizontal;
         Blocksteps.eventHandler.targetScale = Blocksteps.config.camStartScale;
         Blocksteps.eventHandler.prevScale = Blocksteps.eventHandler.scale = 0;
     }
@@ -379,15 +370,34 @@ public class EventHandler
         {
             if(event.keyBind.isPressed())
             {
+                if(fullscreen)
+                {
+                    if(event.keyBind.equals(Blocksteps.config.keyCamRightFS))
+                    {
+                        targetOffsetX -= 36F;
+                    }
+                    else if(event.keyBind.equals(Blocksteps.config.keyCamLeftFS))
+                    {
+                        targetOffsetX += 36F;
+                    }
+                    else if(event.keyBind.equals(Blocksteps.config.keyCamUpFS))
+                    {
+                        targetOffsetY += 36F;
+                    }
+                    else if(event.keyBind.equals(Blocksteps.config.keyCamDownFS))
+                    {
+                        targetOffsetY -= 36F;
+                    }
+                }
                 if(event.keyBind.equals(Blocksteps.config.keyCamRight))
                 {
                     targetAngleY -= Blocksteps.config.camPanHorizontal;
-                    oriY = targetAngleY;
+                    oriAngleY = targetAngleY;
                 }
                 else if(event.keyBind.equals(Blocksteps.config.keyCamLeft))
                 {
                     targetAngleY += Blocksteps.config.camPanHorizontal;
-                    oriY = targetAngleY;
+                    oriAngleY = targetAngleY;
                 }
                 else if(event.keyBind.equals(Blocksteps.config.keyCamUp))
                 {
@@ -403,16 +413,23 @@ public class EventHandler
                 {
                     targetScale += Blocksteps.config.camZoom;
                     oriScale = targetScale;
-                    targetAngleY = oriY;
+                    targetAngleY = oriAngleY;
                 }
                 else if(event.keyBind.equals(Blocksteps.config.keyCamZoomOut))
                 {
                     targetScale -= Blocksteps.config.camZoom;
                     if(targetScale <= 0F)
                     {
-                        targetScale = 0F;
-                        oriY = targetAngleY;
-                        targetAngleY += 270F;
+                        if(fullscreen)
+                        {
+                            targetScale = Blocksteps.config.camZoom;
+                        }
+                        else
+                        {
+                            targetScale = 0F;
+                            oriAngleY = targetAngleY;
+                            targetAngleY += 270F;
+                        }
                     }
                     oriScale = targetScale;
                 }
@@ -425,13 +442,21 @@ public class EventHandler
                             oriScale = Blocksteps.config.camZoom;
                         }
                         targetScale = oriScale;
-                        targetAngleY = oriY;
+                        targetAngleY = oriAngleY;
                     }
-                    else
+                    else if(!fullscreen)
                     {
                         targetScale = 0F;
-                        oriY = targetAngleY;
+                        oriAngleY = targetAngleY;
                         targetAngleY += 270F;
+                    }
+                }
+                else if(event.keyBind.equals(Blocksteps.config.keyToggleFullscreen))
+                {
+                    if(targetScale > 0F)
+                    {
+                        fullscreen = !fullscreen;
+                        targetOffsetX = targetOffsetY = prevOffsetX = prevOffsetY = offsetX = offsetY = 0F;
                     }
                 }
             }
@@ -450,7 +475,7 @@ public class EventHandler
     public float prevScale;
 
     public float angleY = 45F;
-    public float oriY = 30F;
+    public float oriAngleY = 30F;
     public float angleX = 30F;
     public float scale = 1000F;
 
@@ -458,6 +483,14 @@ public class EventHandler
     public float targetAngleY = 45F;
     public float targetScale = 1000F;
     public float oriScale = 1000F;
+
+    public boolean fullscreen = false;
+    public float offsetX = 0F;
+    public float offsetY = 0F;
+    public float prevOffsetX = 0F;
+    public float prevOffsetY = 0F;
+    public float targetOffsetX = 0F;
+    public float targetOffsetY = 0F;
 
     public int frameCount = 0;
 

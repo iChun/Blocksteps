@@ -27,6 +27,10 @@ public class Config extends ConfigBase
     public int renderSky = 1;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int trackOtherPlayers = 0;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 1, max = 15)
     public int stepRadius = 3;
 
@@ -128,6 +132,18 @@ public class Config extends ConfigBase
     public KeyBind keyCamRight = new KeyBind(Keyboard.KEY_NUMPAD6, false, false, false, false);
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    public KeyBind keyCamUpFS = new KeyBind(Keyboard.KEY_UP, false, false, false, false);
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    public KeyBind keyCamDownFS = new KeyBind(Keyboard.KEY_DOWN, false, false, false, false);
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    public KeyBind keyCamLeftFS = new KeyBind(Keyboard.KEY_LEFT, false, false, false, false);
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    public KeyBind keyCamRightFS = new KeyBind(Keyboard.KEY_RIGHT, false, false, false, false);
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     public KeyBind keyCamZoomIn = new KeyBind(Keyboard.KEY_NUMPAD9, false, false, false, false);
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
@@ -135,6 +151,9 @@ public class Config extends ConfigBase
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     public KeyBind keyToggle = new KeyBind(Keyboard.KEY_NUMPAD5, false, false, false, false);
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    public KeyBind keyToggleFullscreen = new KeyBind(Keyboard.KEY_NUMPAD7, false, false, false, false);
 
     public Config(File file)
     {

@@ -3,10 +3,7 @@ package me.ichun.mods.blocksteps.common.blockaid;
 import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.blockaid.handler.BlockPeripheralHandler;
 import me.ichun.mods.blocksteps.common.blockaid.handler.BlockSteppedHandler;
-import me.ichun.mods.blocksteps.common.blockaid.handler.periphs.GenericDenyHandler;
-import me.ichun.mods.blocksteps.common.blockaid.handler.periphs.GenericHandler;
-import me.ichun.mods.blocksteps.common.blockaid.handler.periphs.HorizontalGenericHandler;
-import me.ichun.mods.blocksteps.common.blockaid.handler.periphs.VerticalGenericHandler;
+import me.ichun.mods.blocksteps.common.blockaid.handler.periphs.*;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -27,7 +24,7 @@ public class BlockStepHandler
 {
     public static void handleStep(Entity entity, List<BlockPos> steps)
     {
-        if(entity == Minecraft.getMinecraft().thePlayer && !entity.onGround || !(entity.riddenByEntity instanceof EntityPlayer))
+        if(entity == Minecraft.getMinecraft().thePlayer && !entity.onGround || !(entity instanceof EntityPlayer) && !(entity.riddenByEntity instanceof EntityPlayer))
         {
             return;
         }
@@ -232,17 +229,14 @@ public class BlockStepHandler
 
         blockPeripheralRegistry.put(BlockBed.class, new HorizontalGenericHandler(BlockBed.class));
         blockPeripheralRegistry.put(BlockChest.class, new HorizontalGenericHandler(BlockChest.class));
+
+        blockPeripheralRegistry.put(BlockButton.class, new ButtonHandler());
+        blockPeripheralRegistry.put(BlockLadder.class, new LadderHandler());
+        blockPeripheralRegistry.put(BlockLever.class, new LeverHandler());
+        blockPeripheralRegistry.put(BlockTorch.class, new TorchHandler());
     }
 
-//    addPeripheralBlock(BlockTorch.class, BlockLever.class
-//                       BlockLadder.class
-//                       BlockPane.class,
-//    );
-//    addPeripheralBlock(BlockDynamicLiquid.class);//TODO think about this.
-//    addPeripheralBlock(BlockButton.class); //TODO think about this
-//    addPeripheralBlock(BlockLilyPad.class);//TODO think about these:
     //huge mushrooms
     //trees
     //Portals
-
 }

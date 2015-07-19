@@ -221,9 +221,7 @@ public class RenderGlobalProxy extends RenderGlobal
 
                     if (flag2)
                     {
-                        boolean flag3 = this.mc.getRenderViewEntity() instanceof EntityLivingBase && ((EntityLivingBase)this.mc.getRenderViewEntity()).isPlayerSleeping();
-
-                        if (!shouldRenderEntity(entity3) || entity3 == this.mc.getRenderViewEntity() && this.mc.gameSettings.thirdPersonView == 0 && !flag3 || entity3.posY >= 0.0D && entity3.posY < 256.0D && !this.theWorld.isBlockLoaded(new BlockPos(entity3)))
+                        if (!shouldRenderEntity(entity3) || entity3.posY >= 0.0D && entity3.posY < 256.0D && !this.theWorld.isBlockLoaded(new BlockPos(entity3)))
                         {
                             continue;
                         }
@@ -232,7 +230,7 @@ public class RenderGlobalProxy extends RenderGlobal
                         this.renderManager.renderEntitySimple(entity3, partialTicks);
                     }
 
-                    if (!flag2 && entity3 instanceof EntityWitherSkull)
+                    if (!flag2 && entity3 instanceof EntityWitherSkull && shouldRenderEntity(entity3))
                     {
                         this.mc.getRenderManager().renderWitherSkull(entity3, partialTicks);
                     }
@@ -299,6 +297,14 @@ public class RenderGlobalProxy extends RenderGlobal
     public boolean shouldRenderEntity(Entity entity)
     {
         BlockPos pos = new BlockPos(entity);
+
+        Minecraft mc = Minecraft.getMinecraft();
+
+        if(entity == mc.getRenderViewEntity() || mc.getRenderViewEntity() != null && ((entity == mc.getRenderViewEntity().riddenByEntity || entity == mc.getRenderViewEntity().ridingEntity) || mc.getRenderViewEntity().ridingEntity != null && entity == mc.getRenderViewEntity().ridingEntity.ridingEntity))
+        {
+            return true;
+        }
+
         return Blocksteps.config.mapShowEntities == 1 && (Blocksteps.eventHandler.blocksToRender.contains(pos) || Blocksteps.eventHandler.blocksToRender.contains(pos.add(0, -1, 0)) || Blocksteps.eventHandler.blocksToRender.contains(pos.add(0, -2, 0)));
     }
 
