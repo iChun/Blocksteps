@@ -18,7 +18,7 @@ public class RegionRenderCacheBlocksteps extends RegionRenderCache
     @Override
     public IBlockState getBlockState(BlockPos pos)
     {
-        if(!Blocksteps.eventHandler.getSteps(Minecraft.getMinecraft().theWorld.provider.getDimensionId()).contains(pos))
+        if(!Blocksteps.eventHandler.blocksToRender.contains(pos))
         {
             return Blocks.air.getDefaultState();
         }

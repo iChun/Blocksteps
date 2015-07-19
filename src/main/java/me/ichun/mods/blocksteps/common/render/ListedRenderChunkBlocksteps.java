@@ -17,6 +17,7 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumWorldBlockLayer;
 import net.minecraft.world.World;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -55,7 +56,7 @@ public class ListedRenderChunkBlocksteps extends ListedRenderChunk
         VisGraph visgraph = new VisGraph();
 
         Minecraft mc = Minecraft.getMinecraft();
-        List<BlockPos> steps = Blocksteps.eventHandler.getSteps(mc.theWorld.provider.getDimensionId());
+        HashSet<BlockPos> blocksToRender = Blocksteps.eventHandler.blocksToRender;
 
         if (!regionrendercache.extendedLevelsInChunkCache())
         {
@@ -73,7 +74,7 @@ public class ListedRenderChunkBlocksteps extends ListedRenderChunk
                     visgraph.func_178606_a(mutableblockpos);
                 }
 
-                if (steps.contains(mutableblockpos) && block.hasTileEntity(iblockstate))
+                if (blocksToRender.contains(mutableblockpos) && block.hasTileEntity(iblockstate))
                 {
                     TileEntity tileentity = regionrendercache.getTileEntity(new BlockPos(mutableblockpos));
 
@@ -98,7 +99,7 @@ public class ListedRenderChunkBlocksteps extends ListedRenderChunk
                             this.preRenderBlocks(worldrenderer, blockpos);
                         }
 
-                        if (steps.contains(mutableblockpos) && mc.getBlockRendererDispatcher().renderBlock(iblockstate, mutableblockpos, regionrendercache, worldrenderer))
+                        if (blocksToRender.contains(mutableblockpos) && mc.getBlockRendererDispatcher().renderBlock(iblockstate, mutableblockpos, regionrendercache, worldrenderer))
                         {
                             compiledchunk.setLayerUsed(enumworldblocklayer1);
                         }

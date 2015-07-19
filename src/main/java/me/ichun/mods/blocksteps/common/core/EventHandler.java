@@ -2,6 +2,7 @@ package me.ichun.mods.blocksteps.common.core;
 
 import com.google.common.collect.ArrayListMultimap;
 import me.ichun.mods.blocksteps.common.Blocksteps;
+import me.ichun.mods.blocksteps.common.blockaid.BlockStepHandler;
 import me.ichun.mods.blocksteps.common.render.RenderGlobalProxy;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockSlab;
@@ -37,6 +38,7 @@ import us.ichun.mods.ichunutil.client.keybind.KeyEvent;
 import us.ichun.mods.ichunutil.client.render.RendererHelper;
 import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
 
+import java.util.HashSet;
 import java.util.List;
 
 public class EventHandler
@@ -50,7 +52,7 @@ public class EventHandler
             if(mc.thePlayer != null && !mc.gameSettings.hideGUI /*&& (mc.currentScreen == null || mc.currentScreen instanceof GuiChat)*/)
             {
                 ScaledResolution reso = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
-                float aScale = EntityHelperBase.interpolateValues(prevScale, scale, event.renderTickTime) / 10F;
+                float aScale = EntityHelperBase.interpolateValues(prevScale, scale, event.renderTickTime) / 100F;
 
                 if(aScale > 0.0001F)
                 {
@@ -67,6 +69,11 @@ public class EventHandler
                     if(Blocksteps.config.mapBackgroundOpacity > 0)
                     {
                         RendererHelper.drawColourOnScreen(Blocksteps.config.mapBackgroundColour.getColour(), (int)((float)Blocksteps.config.mapBackgroundOpacity / 100F * 255F * alphaAmp), x, y, width, height, -200D);
+                    }
+                    if(mc.thePlayer.ticksExisted < LOAD_TIMEOUT)
+                    {
+                        float prog = MathHelper.clamp_float((mc.thePlayer.ticksExisted + event.renderTickTime) / (float)LOAD_TIMEOUT, 0F, 1F);
+                        RendererHelper.drawColourOnScreen(170, 170, 170, (int)((float)Blocksteps.config.mapBackgroundOpacity / 100F * 255F * alphaAmp), x, y + (height * 0.95D), width * prog, (height * 0.05D), -200D);
                     }
                     if(Blocksteps.config.mapBorderOpacity > 0)
                     {
@@ -108,6 +115,8 @@ public class EventHandler
             {
                 setNewWorld(null);
                 steps.clear();
+                blocksToRenderByStep.clear();
+                blocksToRender.clear();
                 //TODO set up saving here
             }
         }
@@ -121,12 +130,14 @@ public class EventHandler
         EntityLivingBase ent = mc.thePlayer;
         GlStateManager.enableColorMaterial();
         GlStateManager.pushMatrix();
-        GlStateManager.translate((float)posX, (float)posY, 200.0F);
+        GlStateManager.translate((float)posX, (float)posY , 200.0F);
         GlStateManager.scale(-aScale, aScale, aScale);
         GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);
 
         GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleX, angleX, partialTicks), 1.0F, 0.0F, 0.0F);
         GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleY, angleY, partialTicks), 0.0F, 1.0F, 0.0F);
+
+        GlStateManager.translate(0F, -mc.thePlayer.getEyeHeight(), 0F);
 
         renderWorld(mc, partialTicks);
 
@@ -282,7 +293,6 @@ public class EventHandler
                 angleY = angleY + (targetAngleY - angleY) * 0.4F;
                 scale = scale + (targetScale - scale) * 0.4F;
 
-                //TODO a block radius reveal?
                 List<BlockPos> steps = getSteps(mc.theWorld.provider.getDimensionId());
                 while(steps.size() > Blocksteps.config.renderBlockCount)
                 {
@@ -291,48 +301,33 @@ public class EventHandler
                     if(renderGlobalProxy != null && !steps.contains(pos))
                     {
                         renderGlobalProxy.markBlockForUpdate(pos);
+                        repopulateBlocksToRender = true;
+                        blocksToRenderByStep.removeAll(pos);
                     }
                 }
-                BlockPos pos = new BlockPos(mc.thePlayer.posX, mc.thePlayer.posY - 1, mc.thePlayer.posZ);
-                boolean add = true;
-                if(!steps.isEmpty())
+                BlockStepHandler.handleStep(mc.thePlayer, steps);
+
+                if(repopulateBlocksToRender && mc.thePlayer.ticksExisted > LOAD_TIMEOUT)
                 {
-                    BlockPos lastPos = steps.get(steps.size() - 1);
-                    if(lastPos.equals(pos))
+                    repopulateBlocksToRender = false;
+                    if(mc.thePlayer.ticksExisted == LOAD_TIMEOUT + 1)
                     {
-                        add = false;
+                        BlockStepHandler.getBlocksToRender(true, steps.toArray(new BlockPos[steps.size()]));
                     }
-                }
-                if(add)
-                {
-                    IBlockState state = mc.theWorld.getBlockState(pos);
-                    if(state.getBlock().isAir(mc.theWorld, pos) || !(state.getBlock().isNormalCube(mc.theWorld, pos) || isAcceptableBlockType(state.getBlock())) || !mc.thePlayer.onGround)
+                    for(BlockPos pos : steps)
                     {
-                        add = false;
+                        blocksToRender.addAll(blocksToRenderByStep.get(pos));
                     }
-                }
-                if(add)
-                {
-                    if(renderGlobalProxy != null && !steps.contains(pos))
-                    {
-                        renderGlobalProxy.markBlockForUpdate(pos);
-                    }
-                    steps.add(pos);
                 }
             }
         }
-    }
-
-    public static boolean isAcceptableBlockType(Block block)
-    {
-        return block.getRenderType() == 2 || block.getMaterial() == Material.glass || block == Blocks.glowstone || block == Blocks.cake || block == Blocks.tnt || block == Blocks.ice || block instanceof BlockSlab || block == Blocks.anvil || block instanceof BlockStairs;
     }
 
     @SubscribeEvent
     public void onClientConnect(FMLNetworkEvent.ClientConnectedToServerEvent event)
     {
         Blocksteps.eventHandler.targetAngleX = Blocksteps.eventHandler.prevAngleX = Blocksteps.eventHandler.angleX = Blocksteps.config.camStartVertical;
-        Blocksteps.eventHandler.targetAngleY = Blocksteps.eventHandler.prevAngleY = Blocksteps.eventHandler.angleY = Blocksteps.config.camStartHorizontal;
+        Blocksteps.eventHandler.targetAngleY = Blocksteps.eventHandler.prevAngleY = Blocksteps.eventHandler.angleY = Blocksteps.eventHandler.oriY = Blocksteps.config.camStartHorizontal;
         Blocksteps.eventHandler.targetScale = Blocksteps.config.camStartScale;
         Blocksteps.eventHandler.prevScale = Blocksteps.eventHandler.scale = 0;
     }
@@ -343,6 +338,9 @@ public class EventHandler
         if(event.world.isRemote && event.world instanceof WorldClient)
         {
             setNewWorld((WorldClient)event.world);
+            blocksToRenderByStep.clear();
+            blocksToRender.clear();
+            repopulateBlocksToRender = true;
         }
     }
 
@@ -368,10 +366,12 @@ public class EventHandler
                 if(event.keyBind.equals(Blocksteps.config.keyCamRight))
                 {
                     targetAngleY -= Blocksteps.config.camPanHorizontal;
+                    oriY = targetAngleY;
                 }
                 else if(event.keyBind.equals(Blocksteps.config.keyCamLeft))
                 {
                     targetAngleY += Blocksteps.config.camPanHorizontal;
+                    oriY = targetAngleY;
                 }
                 else if(event.keyBind.equals(Blocksteps.config.keyCamUp))
                 {
@@ -387,13 +387,16 @@ public class EventHandler
                 {
                     targetScale += Blocksteps.config.camZoom;
                     oriScale = targetScale;
+                    targetAngleY = oriY;
                 }
                 else if(event.keyBind.equals(Blocksteps.config.keyCamZoomOut))
                 {
                     targetScale -= Blocksteps.config.camZoom;
-                    if(targetScale < 0F)
+                    if(targetScale <= 0F)
                     {
                         targetScale = 0F;
+                        oriY = targetAngleY;
+                        targetAngleY += 270F;
                     }
                     oriScale = targetScale;
                 }
@@ -401,11 +404,18 @@ public class EventHandler
                 {
                     if(targetScale == 0F)
                     {
+                        if(oriScale == 0F)
+                        {
+                            oriScale = Blocksteps.config.camZoom;
+                        }
                         targetScale = oriScale;
+                        targetAngleY = oriY;
                     }
                     else
                     {
                         targetScale = 0F;
+                        oriY = targetAngleY;
+                        targetAngleY += 270F;
                     }
                 }
             }
@@ -424,15 +434,22 @@ public class EventHandler
     public float prevScale;
 
     public float angleY = 45F;
+    public float oriY = 30F;
     public float angleX = 30F;
-    public float scale = 100F;
+    public float scale = 1000F;
 
     public float targetAngleX = 30F;
     public float targetAngleY = 45F;
-    public float targetScale = 100F;
-    public float oriScale = 100F;
+    public float targetScale = 1000F;
+    public float oriScale = 1000F;
 
     public int frameCount = 0;
 
     public ArrayListMultimap<Integer, BlockPos> steps = ArrayListMultimap.create();
+
+    public ArrayListMultimap<BlockPos, BlockPos> blocksToRenderByStep = ArrayListMultimap.create();
+    public boolean repopulateBlocksToRender = false;
+    public HashSet<BlockPos> blocksToRender = new HashSet<BlockPos>();
+
+    public static final int LOAD_TIMEOUT = 40;
 }

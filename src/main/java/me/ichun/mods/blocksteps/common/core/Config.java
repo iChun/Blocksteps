@@ -27,6 +27,14 @@ public class Config extends ConfigBase
     public int renderSky = 1;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 1, max = 15)
+    public int stepRadius = 3;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int stepPeripherals = 1;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = -180, max = 180)
     public int camStartHorizontal = 45;
 
@@ -35,8 +43,8 @@ public class Config extends ConfigBase
     public int camStartVertical = 30;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
-    @IntMinMax(min = -90, max = 90)
-    public int camStartScale = 100;
+    @IntMinMax(min = 0, max = 1000000)
+    public int camStartScale = 800;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 0)
@@ -48,7 +56,7 @@ public class Config extends ConfigBase
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 0)
-    public int camZoom = 10;
+    public int camZoom = 100;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = -500, max = 500)
@@ -108,25 +116,25 @@ public class Config extends ConfigBase
     public Colour mapBackgroundColour = new Colour(0);
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
-    public KeyBind keyCamUp = new KeyBind(Keyboard.KEY_UP, false, true, false, false);
+    public KeyBind keyCamUp = new KeyBind(Keyboard.KEY_NUMPAD8, false, false, false, false);
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
-    public KeyBind keyCamDown = new KeyBind(Keyboard.KEY_DOWN, false, true, false, false);
+    public KeyBind keyCamDown = new KeyBind(Keyboard.KEY_NUMPAD2, false, false, false, false);
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
-    public KeyBind keyCamLeft = new KeyBind(Keyboard.KEY_LEFT, false, true, false, false);
+    public KeyBind keyCamLeft = new KeyBind(Keyboard.KEY_NUMPAD4, false, false, false, false);
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
-    public KeyBind keyCamRight = new KeyBind(Keyboard.KEY_RIGHT, false, true, false, false);
+    public KeyBind keyCamRight = new KeyBind(Keyboard.KEY_NUMPAD6, false, false, false, false);
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
-    public KeyBind keyCamZoomIn = new KeyBind(Keyboard.KEY_UP, true, true, false, false);
+    public KeyBind keyCamZoomIn = new KeyBind(Keyboard.KEY_NUMPAD9, false, false, false, false);
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
-    public KeyBind keyCamZoomOut = new KeyBind(Keyboard.KEY_DOWN, true, true, false, false);
+    public KeyBind keyCamZoomOut = new KeyBind(Keyboard.KEY_NUMPAD3, false, false, false, false);
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
-    public KeyBind keyToggle = new KeyBind(Keyboard.KEY_TAB, false, true, false, false);
+    public KeyBind keyToggle = new KeyBind(Keyboard.KEY_NUMPAD5, false, false, false, false);
 
     public Config(File file)
     {

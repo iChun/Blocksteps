@@ -15,7 +15,7 @@ import us.ichun.mods.ichunutil.common.iChunUtil;
 @Mod(modid = Blocksteps.MODNAME, name = Blocksteps.MODNAME, clientSideOnly = true,
         version = Blocksteps.VERSION,
         guiFactory = "us.ichun.mods.ichunutil.common.core.config.GenericModGuiFactory",
-        dependencies = "required-after:iChunUtil@[" + iChunUtil.versionMC +".4.0," + (iChunUtil.versionMC + 1) + ".0.0)"
+        dependencies = "required-after:iChunUtil@[" + iChunUtil.versionMC +".5.0," + (iChunUtil.versionMC + 1) + ".0.0)"
 )
 public class Blocksteps
 {
