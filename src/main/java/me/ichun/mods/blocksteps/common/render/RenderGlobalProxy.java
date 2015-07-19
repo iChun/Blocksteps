@@ -197,45 +197,10 @@ public class RenderGlobalProxy extends RenderGlobal
                 if (!entity2.shouldRenderInPass(pass)) continue;
                 ++this.countEntitiesRendered;
 
-                if (entity2.isInRangeToRender3d(d0, d1, d2))
+                if (shouldRenderEntity(entity2) && entity2.isInRangeToRender3d(d0, d1, d2))
                 {
                     this.renderManager.renderEntitySimple(entity2, partialTicks);
                 }
-            }
-
-            if (this.isRenderEntityOutlines())
-            {
-                GlStateManager.depthFunc(519);
-                GlStateManager.disableFog();
-                this.entityOutlineFramebuffer.framebufferClear();
-                this.entityOutlineFramebuffer.bindFramebuffer(false);
-                this.theWorld.theProfiler.endStartSection("entityOutlines");
-                RenderHelper.disableStandardItemLighting();
-                this.renderManager.setRenderOutlines(true);
-
-                for (i = 0; i < list.size(); ++i)
-                {
-                    entity2 = (Entity)list.get(i);
-                    if (!entity2.shouldRenderInPass(pass)) continue;
-                    boolean flag = this.mc.getRenderViewEntity() instanceof EntityLivingBase && ((EntityLivingBase)this.mc.getRenderViewEntity()).isPlayerSleeping();
-                    boolean flag1 = entity2.isInRangeToRender3d(d0, d1, d2) && (entity2.ignoreFrustumCheck || camera.isBoundingBoxInFrustum(entity2.getEntityBoundingBox()) || entity2.riddenByEntity == this.mc.thePlayer) && entity2 instanceof EntityPlayer;
-
-                    if ((entity2 != this.mc.getRenderViewEntity() || this.mc.gameSettings.thirdPersonView != 0 || flag) && flag1)
-                    {
-                        this.renderManager.renderEntitySimple(entity2, partialTicks);
-                    }
-                }
-
-                this.renderManager.setRenderOutlines(false);
-                RenderHelper.enableStandardItemLighting();
-                GlStateManager.depthMask(false);
-                this.entityOutlineShader.loadShaderGroup(partialTicks);
-                GlStateManager.depthMask(true);
-                this.mc.getFramebuffer().bindFramebuffer(false);
-                GlStateManager.enableFog();
-                GlStateManager.depthFunc(515);
-                GlStateManager.enableDepth();
-                GlStateManager.enableAlpha();
             }
 
             this.theWorld.theProfiler.endStartSection("entities");
@@ -256,9 +221,9 @@ public class RenderGlobalProxy extends RenderGlobal
 
                     if (flag2)
                     {
-                        boolean flag3 = this.mc.getRenderViewEntity() instanceof EntityLivingBase ? ((EntityLivingBase)this.mc.getRenderViewEntity()).isPlayerSleeping() : false;
+                        boolean flag3 = this.mc.getRenderViewEntity() instanceof EntityLivingBase && ((EntityLivingBase)this.mc.getRenderViewEntity()).isPlayerSleeping();
 
-                        if (entity3 == this.mc.getRenderViewEntity() && this.mc.gameSettings.thirdPersonView == 0 && !flag3 || entity3.posY >= 0.0D && entity3.posY < 256.0D && !this.theWorld.isBlockLoaded(new BlockPos(entity3)))
+                        if (!shouldRenderEntity(entity3) || entity3 == this.mc.getRenderViewEntity() && this.mc.gameSettings.thirdPersonView == 0 && !flag3 || entity3.posY >= 0.0D && entity3.posY < 256.0D && !this.theWorld.isBlockLoaded(new BlockPos(entity3)))
                         {
                             continue;
                         }
@@ -331,6 +296,11 @@ public class RenderGlobalProxy extends RenderGlobal
         }
     }
 
+    public boolean shouldRenderEntity(Entity entity)
+    {
+        BlockPos pos = new BlockPos(entity);
+        return Blocksteps.config.mapShowEntities == 1 && (Blocksteps.eventHandler.blocksToRender.contains(pos) || Blocksteps.eventHandler.blocksToRender.contains(pos.add(0, -1, 0)) || Blocksteps.eventHandler.blocksToRender.contains(pos.add(0, -2, 0)));
+    }
 
     /**
      * Plays the specified record. Arg: recordName, x, y, z

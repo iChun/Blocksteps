@@ -4,11 +4,6 @@ import com.google.common.collect.ArrayListMultimap;
 import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.blockaid.BlockStepHandler;
 import me.ichun.mods.blocksteps.common.render.RenderGlobalProxy;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockSlab;
-import net.minecraft.block.BlockStairs;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.ScaledResolution;
@@ -23,7 +18,6 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.boss.EntityDragon;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumWorldBlockLayer;
 import net.minecraft.util.MathHelper;
@@ -38,6 +32,7 @@ import us.ichun.mods.ichunutil.client.keybind.KeyEvent;
 import us.ichun.mods.ichunutil.client.render.RendererHelper;
 import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -143,17 +138,21 @@ public class EventHandler
 
         RenderHelper.enableStandardItemLighting();
 
-        if(ent instanceof EntityDragon)
-        {
-            GlStateManager.rotate(180F, 0.0F, 1.0F, 0.0F);
-        }
         RenderManager rendermanager = Minecraft.getMinecraft().getRenderManager();
         float viewY = rendermanager.playerViewY;
-        rendermanager.setPlayerViewY(180.0F);
-        rendermanager.renderEntityWithPosYaw(ent, 0.0D, 0.0D, 0.0D, 0.0F, partialTicks);
-        if(ent instanceof EntityDragon)
+
+        if(!(mc.gameSettings.thirdPersonView != 0 && Blocksteps.config.mapShowEntities == 1))
         {
-            GlStateManager.rotate(180F, 0.0F, -1.0F, 0.0F);
+            if(ent instanceof EntityDragon)
+            {
+                GlStateManager.rotate(180F, 0.0F, 1.0F, 0.0F);
+            }
+            rendermanager.setPlayerViewY(180.0F);
+            rendermanager.renderEntityWithPosYaw(ent, 0.0D, 0.0D, 0.0D, 0.0F, partialTicks);
+            if(ent instanceof EntityDragon)
+            {
+                GlStateManager.rotate(180F, 0.0F, -1.0F, 0.0F);
+            }
         }
 
         Entity ridden = ent.riddenByEntity;
@@ -234,18 +233,18 @@ public class EventHandler
             renderglobal.renderBlockLayer(EnumWorldBlockLayer.CUTOUT, (double)partialTicks, pass, entity);
             mc.getTextureManager().getTexture(TextureMap.locationBlocksTexture).restoreLastBlurMipmap();
 
-            //            GlStateManager.matrixMode(GL11.GL_MODELVIEW);
-            //            GlStateManager.popMatrix();
-            //            GlStateManager.pushMatrix();
-            //            RenderHelper.enableStandardItemLighting();
-            //            net.minecraftforge.client.ForgeHooksClient.setRenderPass(0);
-            //            renderglobal.renderEntities(entity, frustum, partialTicks);
-            //            net.minecraftforge.client.ForgeHooksClient.setRenderPass(0);
-            //            RenderHelper.disableStandardItemLighting();
-            //            mc.entityRenderer.disableLightmap();
-            //            GlStateManager.matrixMode(GL11.GL_MODELVIEW);
-            //            GlStateManager.popMatrix();
-            //            GlStateManager.pushMatrix();
+            GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+            GlStateManager.popMatrix();
+            GlStateManager.pushMatrix();
+            RenderHelper.enableStandardItemLighting();
+            net.minecraftforge.client.ForgeHooksClient.setRenderPass(0);
+            renderglobal.renderEntities(entity, frustum, partialTicks);
+            net.minecraftforge.client.ForgeHooksClient.setRenderPass(0);
+            RenderHelper.disableStandardItemLighting();
+            mc.entityRenderer.disableLightmap();
+            GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+            GlStateManager.popMatrix();
+            GlStateManager.pushMatrix();
 
             GlStateManager.matrixMode(GL11.GL_MODELVIEW);
             GlStateManager.popMatrix();
@@ -293,6 +292,11 @@ public class EventHandler
                 angleY = angleY + (targetAngleY - angleY) * 0.4F;
                 scale = scale + (targetScale - scale) * 0.4F;
 
+                if(renderGlobalProxy != null && (Math.abs(targetAngleX - angleX) > 0.01D || Math.abs(targetAngleY - angleY) > 0.01D || Math.abs(targetScale - scale) > 0.01D))
+                {
+                    renderGlobalProxy.lastViewEntityPitch += 0.001F;
+                }
+
                 List<BlockPos> steps = getSteps(mc.theWorld.provider.getDimensionId());
                 while(steps.size() > Blocksteps.config.renderBlockCount)
                 {
@@ -305,7 +309,19 @@ public class EventHandler
                         blocksToRenderByStep.removeAll(pos);
                     }
                 }
-                BlockStepHandler.handleStep(mc.thePlayer, steps);
+                ArrayList<Entity> entitiesToTrack = new ArrayList<Entity>();
+                if(mc.thePlayer.ridingEntity != null)
+                {
+                    entitiesToTrack.add(mc.thePlayer.ridingEntity);
+                }
+                else
+                {
+                    entitiesToTrack.add(mc.thePlayer);
+                }
+                for(Entity ent : entitiesToTrack)
+                {
+                    BlockStepHandler.handleStep(ent, steps);
+                }
 
                 if(repopulateBlocksToRender && mc.thePlayer.ticksExisted > LOAD_TIMEOUT)
                 {

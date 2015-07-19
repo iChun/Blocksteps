@@ -13,6 +13,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
@@ -26,7 +27,7 @@ public class BlockStepHandler
 {
     public static void handleStep(Entity entity, List<BlockPos> steps)
     {
-        if(!entity.onGround)
+        if(entity == Minecraft.getMinecraft().thePlayer && !entity.onGround || !(entity.riddenByEntity instanceof EntityPlayer))
         {
             return;
         }
