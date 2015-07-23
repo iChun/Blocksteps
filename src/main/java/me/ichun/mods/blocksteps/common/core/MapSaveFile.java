@@ -25,7 +25,13 @@ public class MapSaveFile
 
     public void load()
     {
-        Blocksteps.eventHandler.steps = stepPoints;
-        Blocksteps.eventHandler.waypoints = waypoints;
+        if(stepPoints != null)
+        {
+            Blocksteps.eventHandler.steps = stepPoints;
+        }
+        if(waypoints != null)
+        {
+            Blocksteps.eventHandler.waypoints = waypoints;
+        }
     }
 }

@@ -67,6 +67,18 @@ public class Config extends ConfigBase
     public int endTowerDetection = 1;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int waypointOnDeath = 0;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int waypointIndicator = 1;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int waypointBeam = 1;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = -180, max = 180)
     public int camStartHorizontal = 45;
 

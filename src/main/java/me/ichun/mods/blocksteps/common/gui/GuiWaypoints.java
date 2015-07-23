@@ -1,5 +1,6 @@
 package me.ichun.mods.blocksteps.common.gui;
 
+import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.gui.window.WindowEditWaypoint;
 import me.ichun.mods.blocksteps.common.gui.window.WindowWaypoints;
 import net.minecraft.client.Minecraft;
@@ -48,7 +49,7 @@ public class GuiWaypoints extends IWorkspace
     public void onGuiClosed()
     {
         Keyboard.enableRepeatEvents(false);
-        //TODO RECREATE ENTITIES for entities
+        Blocksteps.eventHandler.cleanWaypoints();
     }
 
     @Override

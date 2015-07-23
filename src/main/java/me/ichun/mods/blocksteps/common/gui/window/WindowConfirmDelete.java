@@ -2,6 +2,7 @@ package me.ichun.mods.blocksteps.common.gui.window;
 
 import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.core.Waypoint;
+import me.ichun.mods.blocksteps.common.gui.GuiWaypoints;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.StatCollector;
 import us.ichun.mods.ichunutil.client.gui.Theme;
@@ -58,6 +59,7 @@ public class WindowConfirmDelete extends Window
             {
                 Blocksteps.eventHandler.getWaypoints(Minecraft.getMinecraft().theWorld.provider.getDimensionId()).remove(waypoint);
             }
+            ((GuiWaypoints)workspace).windowWaypoints.list.selectedIdentifier = "";
 
             workspace.removeWindow(this, true);
         }
