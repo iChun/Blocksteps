@@ -47,6 +47,12 @@ public class ObsidianHandler extends BlockPeripheralHandler
     }
 
     @Override
+    public boolean isAlsoSolidBlock()
+    {
+        return true;
+    }
+
+    @Override
     public boolean requireThread()
     {
         return true;

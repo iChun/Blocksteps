@@ -2,9 +2,14 @@ package me.ichun.mods.blocksteps.common;
 
 import me.ichun.mods.blocksteps.common.core.Config;
 import me.ichun.mods.blocksteps.common.core.EventHandler;
+import me.ichun.mods.blocksteps.common.layer.LayerSheepPig;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.RenderPig;
+import net.minecraft.entity.passive.EntityPig;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import us.ichun.mods.ichunutil.common.core.Logger;
 import us.ichun.mods.ichunutil.common.core.config.ConfigHandler;

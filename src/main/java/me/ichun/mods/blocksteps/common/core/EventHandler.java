@@ -7,6 +7,7 @@ import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.blockaid.BlockStepHandler;
 import me.ichun.mods.blocksteps.common.blockaid.CheckBlockInfo;
 import me.ichun.mods.blocksteps.common.blockaid.ThreadCheckBlocks;
+import me.ichun.mods.blocksteps.common.layer.LayerSheepPig;
 import me.ichun.mods.blocksteps.common.render.RenderGlobalProxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
@@ -18,9 +19,11 @@ import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.entity.RenderPig;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.passive.EntityPig;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.util.BlockPos;
@@ -36,6 +39,7 @@ import org.lwjgl.opengl.GL11;
 import us.ichun.mods.ichunutil.client.keybind.KeyEvent;
 import us.ichun.mods.ichunutil.client.render.RendererHelper;
 import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
+import us.ichun.mods.ichunutil.common.core.event.RendererSafeCompatibilityEvent;
 import us.ichun.mods.ichunutil.common.core.util.IOUtil;
 import us.ichun.mods.ichunutil.common.core.util.ResourceHelper;
 
@@ -47,6 +51,13 @@ import java.util.List;
 
 public class EventHandler
 {
+    @SubscribeEvent
+    public void onRendererSafeCompatibility(RendererSafeCompatibilityEvent event)
+    {
+        RenderPig renderPig = (RenderPig)Minecraft.getMinecraft().getRenderManager().getEntityClassRenderObject(EntityPig.class);
+        renderPig.addLayer(new LayerSheepPig(renderPig));
+    }
+
     @SubscribeEvent
     public void onRenderTick(TickEvent.RenderTickEvent event)
     {
@@ -68,13 +79,23 @@ public class EventHandler
                     int y = (int)(reso.getScaledHeight_double() * (Blocksteps.config.mapStartY / 100D));
                     int width = (int)(reso.getScaledWidth_double() * ((Blocksteps.config.mapEndX - Blocksteps.config.mapStartX) / 100D));
                     int height = (int)(reso.getScaledHeight_double() * ((Blocksteps.config.mapEndY - Blocksteps.config.mapStartY) / 100D));
+
+                    float fsProg = MathHelper.clamp_float((fullscreenTimeout - event.renderTickTime) / 3F, 0F, 1F);
                     if(fullscreen)
                     {
-                        x = (int)(reso.getScaledWidth_double() * 0.01D);
-                        y = (int)(reso.getScaledHeight_double() * 0.02D);
-                        width = (int)(reso.getScaledWidth_double() * 0.98D);
-                        height = (int)(reso.getScaledHeight_double() * 0.96D);
+                        fsProg = 1.0F - fsProg;
                     }
+                    fsProg = (float)Math.pow(fsProg, 0.5D);
+                    double fsX = (reso.getScaledWidth_double() * 0.01D) - x;
+                    double fsY = (reso.getScaledHeight_double() * 0.02D) - y;
+                    double fsWidth = (reso.getScaledWidth_double() * 0.98D) - width;
+                    double fsHeight = (reso.getScaledHeight_double() * 0.96D) - height;
+
+                    x += fsX * fsProg;
+                    y += fsY * fsProg;
+                    width += fsWidth * fsProg;
+                    height += fsHeight * fsProg;
+
                     float alphaAmp = MathHelper.clamp_float(aScale / 0.1F, 0F, 1F);
 
                     GlStateManager.disableDepth();
@@ -119,7 +140,9 @@ public class EventHandler
                     GlStateManager.enableDepth();
 
                     RendererHelper.startGlScissor(x, y, width, height);
+                    renderingMinimap = true;
                     drawMap(mc, reso, x, y, width, height, aScale, event.renderTickTime);
+                    renderingMinimap = false;
                     RendererHelper.endGlScissor();
 
                     if(Blocksteps.config.renderCompass == 1)
@@ -472,6 +495,7 @@ public class EventHandler
                     }
                 }
             }
+            if(fullscreenTimeout-- > 0);
         }
     }
 
@@ -485,6 +509,7 @@ public class EventHandler
         saveTimeout = Blocksteps.config.saveInterval;
 
         String connectionName = event.manager.getRemoteAddress().toString();
+//        System.out.println(event.manager.getRemoteAddress().toString());
         if(connectionName.contains("/")) //probably a public server
         {
             saveLocation = new File(new File(ResourceHelper.getModsFolder(), "/blocksteps/"), connectionName.substring(0, connectionName.indexOf("/")) + "_" + connectionName.substring(connectionName.indexOf(":") + 1, connectionName.length()) + ".bsv");
@@ -636,6 +661,7 @@ public class EventHandler
                     if(targetScale > 0F)
                     {
                         fullscreen = !fullscreen;
+                        fullscreenTimeout = 3;
                         targetOffsetX = targetOffsetY = prevOffsetX = prevOffsetY = offsetX = offsetY = 0F;
                     }
                 }
@@ -655,6 +681,8 @@ public class EventHandler
     public RenderGlobalProxy renderGlobalProxy;
     public ThreadCheckBlocks threadCheckBlocks;
 
+    public boolean renderingMinimap;
+
     public float prevAngleY;
     public float prevAngleX;
     public float prevScale;
@@ -670,6 +698,7 @@ public class EventHandler
     public float oriScale = 1000F;
 
     public boolean fullscreen = false;
+    public int fullscreenTimeout = 0;
     public float offsetX = 0F;
     public float offsetY = 0F;
     public float prevOffsetX = 0F;

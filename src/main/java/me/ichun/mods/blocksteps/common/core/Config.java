@@ -15,8 +15,8 @@ import java.io.File;
 public class Config extends ConfigBase
 {
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
-    @IntMinMax(min = 0, max = 1000000)
-    public int renderBlockCount = 5000;
+    @IntMinMax(min = 0, max = 10000000)
+    public int renderBlockCount = 10000;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 0, max = 32)
@@ -150,6 +150,10 @@ public class Config extends ConfigBase
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     public Colour mapBackgroundColour = new Colour(0);
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int easterEgg = 1;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     public KeyBind keyCamUp = new KeyBind(Keyboard.KEY_NUMPAD8, false, false, false, false);

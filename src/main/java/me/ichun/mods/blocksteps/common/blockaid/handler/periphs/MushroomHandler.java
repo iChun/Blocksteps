@@ -65,4 +65,17 @@ public class MushroomHandler extends BlockPeripheralHandler
         }
         return triesLeft - 1;
     }
+
+    @Override
+    public boolean isAlsoSolidBlock()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean requireThread()
+    {
+        return true;
+    }
+
 }

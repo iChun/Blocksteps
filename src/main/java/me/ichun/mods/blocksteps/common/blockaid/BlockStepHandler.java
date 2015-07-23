@@ -2,7 +2,6 @@ package me.ichun.mods.blocksteps.common.blockaid;
 
 import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.blockaid.handler.BlockPeripheralHandler;
-import me.ichun.mods.blocksteps.common.blockaid.handler.BlockSteppedHandler;
 import me.ichun.mods.blocksteps.common.blockaid.handler.periphs.*;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
@@ -70,7 +69,7 @@ public class BlockStepHandler
     public static BlockPos adjustIfBlockIsPeripheral(World world, BlockPos pos)
     {
         IBlockState state = world.getBlockState(pos);
-        if(isBlockTypePeripheral(world, pos, state.getBlock(), state, DUMMY_AVAILABLES))
+        if(isBlockTypePeripheral(world, pos, state.getBlock(), state, DUMMY_AVAILABLES) && !getBlockPeripheralHandler(state.getBlock()).isAlsoSolidBlock())
         {
             return pos.add(0, -1, 0);
         }
@@ -187,7 +186,6 @@ public class BlockStepHandler
     }
 
     public static HashMap<Class<? extends Block>, BlockPeripheralHandler> blockPeripheralRegistry = new HashMap<Class<? extends Block>, BlockPeripheralHandler>();
-    public static HashMap<Class<? extends Block>, BlockSteppedHandler> blockSteppedRegistry = new HashMap<Class<? extends Block>, BlockSteppedHandler>();
 
     public static final ArrayList<BlockPos> DUMMY_AVAILABLES = new ArrayList<BlockPos>();
     public static final GenericHandler DEFAULT_GENERIC_HANDLER = new GenericHandler();
@@ -207,7 +205,6 @@ public class BlockStepHandler
         blockPeripheralRegistry.put(BlockDaylightDetector.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockEnderChest.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockEnchantmentTable.class, DEFAULT_GENERIC_HANDLER);
-        blockPeripheralRegistry.put(BlockFence.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockFenceGate.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockFire.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockFlowerPot.class, DEFAULT_GENERIC_HANDLER);
@@ -236,11 +233,13 @@ public class BlockStepHandler
         blockPeripheralRegistry.put(BlockCrops.class, new VerticalGenericHandler(BlockCrops.class, 2));
         blockPeripheralRegistry.put(BlockDoor.class, new VerticalGenericHandler(BlockDoor.class, 2));
         blockPeripheralRegistry.put(BlockLiquid.class, new VerticalGenericHandler(BlockLiquid.class, 15));
-        blockPeripheralRegistry.put(BlockPane.class, new VerticalGenericHandler(BlockPane.class, 5));
         blockPeripheralRegistry.put(BlockReed.class, new VerticalGenericHandler(BlockReed.class, 5));
 
         blockPeripheralRegistry.put(BlockBed.class, new HorizontalGenericHandler(BlockBed.class));
         blockPeripheralRegistry.put(BlockChest.class, new HorizontalGenericHandler(BlockChest.class));
+
+        blockPeripheralRegistry.put(BlockPane.class, new SideSolidBlockHandler(BlockPane.class, 5));
+        blockPeripheralRegistry.put(BlockFence.class, new SideSolidBlockHandler(BlockFence.class, 5));
 
         blockPeripheralRegistry.put(BlockButton.class, new ButtonHandler());
         blockPeripheralRegistry.put(BlockEndPortalFrame.class, new EndPortalHandler());

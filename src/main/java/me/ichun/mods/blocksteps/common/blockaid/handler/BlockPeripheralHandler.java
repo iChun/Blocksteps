@@ -21,6 +21,11 @@ public abstract class BlockPeripheralHandler
         return poses;
     }
 
+    public boolean isAlsoSolidBlock()
+    {
+        return false;
+    }
+
     public boolean requireThread()
     {
         return false;
