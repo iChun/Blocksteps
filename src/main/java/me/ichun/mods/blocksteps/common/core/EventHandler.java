@@ -7,6 +7,7 @@ import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.blockaid.BlockStepHandler;
 import me.ichun.mods.blocksteps.common.blockaid.CheckBlockInfo;
 import me.ichun.mods.blocksteps.common.blockaid.ThreadCheckBlocks;
+import me.ichun.mods.blocksteps.common.gui.GuiWaypoints;
 import me.ichun.mods.blocksteps.common.layer.LayerSheepPig;
 import me.ichun.mods.blocksteps.common.render.RenderGlobalProxy;
 import net.minecraft.client.Minecraft;
@@ -43,10 +44,12 @@ import us.ichun.mods.ichunutil.common.core.event.RendererSafeCompatibilityEvent;
 import us.ichun.mods.ichunutil.common.core.util.IOUtil;
 import us.ichun.mods.ichunutil.common.core.util.ResourceHelper;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.*;
+import java.util.List;
 
 public class EventHandler
 {
@@ -149,6 +152,12 @@ public class EventHandler
                         GlStateManager.depthMask(false);
                         GlStateManager.disableDepth();
                         mc.fontRendererObj.drawString("Steps loaded: " + getSteps(mc.theWorld.provider.getDimensionId()).size(), x + 2, y + 2, 0xffffff);
+
+//                        RendererHelper.drawGradientOnScreen(0xff000000, 0xff000000, 0xffffffff, Color.HSBtoRGB((mc.thePlayer.ticksExisted + event.renderTickTime % 100) / 100F, 1F, 1F), x, y, height, height, 0D);
+//                        RendererHelper.drawGradientOnScreen(0xff0000ff, 0xff0000ff, 0xffff0000, 0xffff0000, x, y, height, height / 3D, 0D);
+//                        RendererHelper.drawGradientOnScreen(0xff00ff00, 0xff00ff00, 0xff0000ff, 0xff0000ff, x, y + height / 3D, height, height / 3D, 0D);
+//                        RendererHelper.drawGradientOnScreen(0xffff0000, 0xffff0000, 0xff00ff00, 0xff00ff00, x, y + height / 3D + height / 3D, height, height / 3D, 0D);
+                        RendererHelper.drawHueStripOnScreen(255, x, y, height, height, 0D);
                         GlStateManager.enableDepth();
                         GlStateManager.depthMask(true);
                     }
@@ -578,7 +587,21 @@ public class EventHandler
         }
 
         renderGlobalProxy.setWorldAndLoadRenderers(world);
+
+        cleanWaypoints();
     }
+
+    public void cleanWaypoints()
+    {
+        for(Map.Entry<Integer, ArrayList<Waypoint>> e : waypoints.entrySet())
+        {
+            for(Waypoint wp : e.getValue())
+            {
+                wp.entityInstance = null; //prevents memleaks
+            }
+        }
+    }
+
 
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
@@ -683,6 +706,10 @@ public class EventHandler
                 {
                     repopulateBlocksToRender = purgeRerender = true;
                 }
+                else if(event.keyBind.equals(Blocksteps.config.keyWaypoints))
+                {
+                    mc.displayGuiScreen(new GuiWaypoints());
+                }
             }
         }
     }
@@ -696,6 +723,17 @@ public class EventHandler
             steps.put(dimension, dimSteps);
         }
         return dimSteps;
+    }
+
+    public ArrayList<Waypoint> getWaypoints(int dimension)
+    {
+        ArrayList<Waypoint> dimPoints = waypoints.get(dimension);
+        if(dimPoints == null)
+        {
+            dimPoints = new ArrayList<Waypoint>();
+            waypoints.put(dimension, dimPoints);
+        }
+        return dimPoints;
     }
 
     public RenderGlobalProxy renderGlobalProxy;
@@ -729,6 +767,7 @@ public class EventHandler
     public int frameCount = 0;
 
     public TreeMap<Integer, ArrayList<BlockPos>> steps = new TreeMap<Integer, ArrayList<BlockPos>>(Ordering.natural()); //newest = last index. oldest = index 0
+    public TreeMap<Integer, ArrayList<Waypoint>> waypoints = new TreeMap<Integer, ArrayList<Waypoint>>(Ordering.natural()); //newest = last index. oldest = index 0
 
     public EntityArrow arrowCompass = new EntityArrow(null);
 

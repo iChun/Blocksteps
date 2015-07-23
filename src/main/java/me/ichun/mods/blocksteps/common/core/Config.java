@@ -194,6 +194,9 @@ public class Config extends ConfigBase
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     public KeyBind keyPurgeRerender = new KeyBind(Keyboard.KEY_NUMPAD1, false, false, false, false);
 
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    public KeyBind keyWaypoints = new KeyBind(Keyboard.KEY_NUMPAD0, false, false, false, false);
+
     public Config(File file)
     {
         super(file);

@@ -47,6 +47,7 @@ blocksteps.config.prop.keyCamZoomOut.name=Camera Zoom Out
 blocksteps.config.prop.keyToggle.name=Mini-Map Toggle
 blocksteps.config.prop.keyToggleFullscreen.name=Toggle Full Screen
 blocksteps.config.prop.keyPurgeRerender.name=Purge Rerender
+blocksteps.config.prop.keyWaypoints.name=Waypoints
 
 blocksteps.config.prop.renderBlockCount.comment=The maximum number of blocks to track on each server for rendering.
 blocksteps.config.prop.renderDistance.comment=Maximum chunks for rendering.\n0 = Minecraft default\nI would recommend 6 as a render distance since this is a minimap.
@@ -97,3 +98,18 @@ blocksteps.config.prop.keyCamZoomOut.comment=Key to zoom out.
 blocksteps.config.prop.keyToggle.comment=Key to toggle the mini-map.
 blocksteps.config.prop.keyToggleFullscreen.comment=Key to toggle full screen.
 blocksteps.config.prop.keyPurgeRerender.comment=Sometimes, the world data isn't available when the world is loaded.\nUse this key to purge a rerender and recollect block data.
+blocksteps.config.prop.keyWaypoints.comment=Key to show the waypoints menu.
+
+blocksteps.gui.newWaypoint=New Waypoint
+blocksteps.gui.deleteWaypoint=Delete Waypoint
+blocksteps.gui.deleteMap=Delete Map Storage
+
+blocksteps.gui.waypoints=Waypoints
+blocksteps.gui.editWaypoint=Edit Waypoint
+
+blocksteps.waypoint.name=Waypoint name
+blocksteps.waypoint.pos=Position
+blocksteps.waypoint.colour=Colour
+blocksteps.waypoint.visible=Visible?
+blocksteps.waypoint.showDistance=Show Distance?
+blocksteps.waypoint.entityType=Waypoint type
