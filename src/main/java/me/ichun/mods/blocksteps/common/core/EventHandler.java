@@ -1,7 +1,7 @@
 package me.ichun.mods.blocksteps.common.core;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.io.ByteStreams;
+import com.google.common.collect.Ordering;
 import com.google.gson.Gson;
 import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.blockaid.BlockStepHandler;
@@ -43,11 +43,10 @@ import us.ichun.mods.ichunutil.common.core.event.RendererSafeCompatibilityEvent;
 import us.ichun.mods.ichunutil.common.core.util.IOUtil;
 import us.ichun.mods.ichunutil.common.core.util.ResourceHelper;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.*;
 
 public class EventHandler
 {
@@ -509,7 +508,7 @@ public class EventHandler
         saveTimeout = Blocksteps.config.saveInterval;
 
         String connectionName = event.manager.getRemoteAddress().toString();
-//        System.out.println(event.manager.getRemoteAddress().toString());
+        //        System.out.println(event.manager.getRemoteAddress().toString());
         if(connectionName.contains("/")) //probably a public server
         {
             saveLocation = new File(new File(ResourceHelper.getModsFolder(), "/blocksteps/"), connectionName.substring(0, connectionName.indexOf("/")) + "_" + connectionName.substring(connectionName.indexOf(":") + 1, connectionName.length()) + ".bsv");
@@ -673,9 +672,15 @@ public class EventHandler
         }
     }
 
-    public List<BlockPos> getSteps(int dimension)
+    public ArrayList<BlockPos> getSteps(int dimension)
     {
-        return steps.get(dimension);
+        ArrayList<BlockPos> dimSteps = steps.get(dimension);
+        if(dimSteps == null)
+        {
+            dimSteps = new ArrayList<BlockPos>();
+            steps.put(dimension, dimSteps);
+        }
+        return dimSteps;
     }
 
     public RenderGlobalProxy renderGlobalProxy;
@@ -708,7 +713,7 @@ public class EventHandler
 
     public int frameCount = 0;
 
-    public ArrayListMultimap<Integer, BlockPos> steps = ArrayListMultimap.create();
+    public TreeMap<Integer, ArrayList<BlockPos>> steps = new TreeMap<Integer, ArrayList<BlockPos>>(Ordering.natural());
 
     public EntityArrow arrowCompass = new EntityArrow(null);
 
