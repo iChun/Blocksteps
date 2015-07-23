@@ -1,12 +1,9 @@
 package me.ichun.mods.blocksteps.common.core;
 
-import com.google.common.collect.Ordering;
 import me.ichun.mods.blocksteps.common.Blocksteps;
 import net.minecraft.util.BlockPos;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
 import java.util.TreeMap;
 
 public class MapSaveFile
@@ -19,7 +16,7 @@ public class MapSaveFile
     {
         MapSaveFile file = new MapSaveFile();
 
-        file.stepPoints = Blocksteps.eventHandler.steps;
+        file.stepPoints = new TreeMap<Integer, ArrayList<BlockPos>>(Blocksteps.eventHandler.steps);
 
         return file;
     }

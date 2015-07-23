@@ -30,8 +30,23 @@ public class LayerSheepPig implements LayerRenderer
         {
             Minecraft.getMinecraft().getTextureManager().bindTexture(texSheepPig);
 
-            float[] afloat = EntitySheep.func_175513_a(EnumDyeColor.byMetadata(pig.getEntityId() & 15));
-            GlStateManager.color(afloat[0], afloat[1], afloat[2]);
+            if (pig.hasCustomName() && "jeb_".equals(pig.getCustomNameTag()))
+            {
+                boolean flag = true;
+                int i = pig.ticksExisted / 25 + pig.getEntityId();
+                int j = EnumDyeColor.values().length;
+                int k = i % j;
+                int l = (i + 1) % j;
+                float f7 = ((float)(pig.ticksExisted % 25) + renderTick) / 25.0F;
+                float[] afloat1 = EntitySheep.func_175513_a(EnumDyeColor.byMetadata(k));
+                float[] afloat2 = EntitySheep.func_175513_a(EnumDyeColor.byMetadata(l));
+                GlStateManager.color(afloat1[0] * (1.0F - f7) + afloat2[0] * f7, afloat1[1] * (1.0F - f7) + afloat2[1] * f7, afloat1[2] * (1.0F - f7) + afloat2[2] * f7);
+            }
+            else
+            {
+                float[] afloat = EntitySheep.func_175513_a(EnumDyeColor.byMetadata(pig.getEntityId() & 15));
+                GlStateManager.color(afloat[0], afloat[1], afloat[2]);
+            }
 
             modelSheepPig.setModelAttributes(renderPig.getMainModel());
             modelSheepPig.setLivingAnimations(pig, f, f1, renderTick);

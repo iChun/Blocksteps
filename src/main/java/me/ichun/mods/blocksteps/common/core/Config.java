@@ -16,7 +16,7 @@ public class Config extends ConfigBase
 {
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 0, max = 10000000)
-    public int renderBlockCount = 10000;
+    public int renderBlockCount = 100000;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 0, max = 32)

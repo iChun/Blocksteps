@@ -97,8 +97,8 @@ public class EventHandler
 
                     float alphaAmp = MathHelper.clamp_float(aScale / 0.1F, 0F, 1F);
 
-                    GlStateManager.disableDepth();
                     GlStateManager.depthMask(false);
+                    GlStateManager.disableDepth();
 
                     if(Blocksteps.config.mapBackgroundOpacity > 0)
                     {
@@ -135,8 +135,8 @@ public class EventHandler
                         }
                     }
 
-                    GlStateManager.depthMask(true);
                     GlStateManager.enableDepth();
+                    GlStateManager.depthMask(true);
 
                     RendererHelper.startGlScissor(x, y, width, height);
                     renderingMinimap = true;
@@ -144,10 +144,19 @@ public class EventHandler
                     renderingMinimap = false;
                     RendererHelper.endGlScissor();
 
+                    if(mc.gameSettings.showDebugInfo)
+                    {
+                        GlStateManager.depthMask(false);
+                        GlStateManager.disableDepth();
+                        mc.fontRendererObj.drawString("Steps loaded: " + getSteps(mc.theWorld.provider.getDimensionId()).size(), x + 2, y + 2, 0xffffff);
+                        GlStateManager.enableDepth();
+                        GlStateManager.depthMask(true);
+                    }
+
                     if(Blocksteps.config.renderCompass == 1)
                     {
-                        GlStateManager.disableDepth();
                         GlStateManager.depthMask(false);
+                        GlStateManager.disableDepth();
                         GlStateManager.disableLighting();
 
                         GlStateManager.enableColorMaterial();
@@ -167,8 +176,8 @@ public class EventHandler
                         GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 
                         GlStateManager.enableLighting();
-                        GlStateManager.depthMask(true);
                         GlStateManager.enableDepth();
+                        GlStateManager.depthMask(true);
                     }
 
                     GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
@@ -466,6 +475,9 @@ public class EventHandler
                     if(mc.thePlayer.ticksExisted == Blocksteps.config.mapLoad + 1 || purgeRerender)
                     {
                         purgeRerender = false;
+                        purgeX = mc.thePlayer.posX;
+                        purgeY = mc.thePlayer.posY;
+                        purgeZ = mc.thePlayer.posZ;
                         BlockStepHandler.getBlocksToRender(true, steps.toArray(new BlockPos[steps.size()]));
                     }
                     for(BlockPos pos : steps)
@@ -493,6 +505,10 @@ public class EventHandler
                         }
                     }
                 }
+                if(mc.getRenderViewEntity().getDistance(purgeX, purgeY, purgeZ) > (mc.gameSettings.renderDistanceChunks * 16D) * 0.75D)
+                {
+                    repopulateBlocksToRender = purgeRerender = true;
+                }
             }
             if(fullscreenTimeout-- > 0);
         }
@@ -508,8 +524,7 @@ public class EventHandler
         saveTimeout = Blocksteps.config.saveInterval;
 
         String connectionName = event.manager.getRemoteAddress().toString();
-        //        System.out.println(event.manager.getRemoteAddress().toString());
-        if(connectionName.contains("/")) //probably a public server
+        if(connectionName.contains("/") && !connectionName.startsWith("/192.168.")) //probably a public server
         {
             saveLocation = new File(new File(ResourceHelper.getModsFolder(), "/blocksteps/"), connectionName.substring(0, connectionName.indexOf("/")) + "_" + connectionName.substring(connectionName.indexOf(":") + 1, connectionName.length()) + ".bsv");
             if(saveLocation.exists())
@@ -529,7 +544,7 @@ public class EventHandler
                 };
             }
         }
-        else if(connectionName.startsWith("local"))
+        else if(connectionName.startsWith("local") || connectionName.startsWith("/192.168."))
         {
             attemptLocalLoad = true;
         }
@@ -713,7 +728,7 @@ public class EventHandler
 
     public int frameCount = 0;
 
-    public TreeMap<Integer, ArrayList<BlockPos>> steps = new TreeMap<Integer, ArrayList<BlockPos>>(Ordering.natural());
+    public TreeMap<Integer, ArrayList<BlockPos>> steps = new TreeMap<Integer, ArrayList<BlockPos>>(Ordering.natural()); //newest = last index. oldest = index 0
 
     public EntityArrow arrowCompass = new EntityArrow(null);
 
@@ -722,6 +737,9 @@ public class EventHandler
     public HashSet<BlockPos> blocksToRender = new HashSet<BlockPos>();
     public final List<CheckBlockInfo> blocksToAdd = Collections.synchronizedList(new ArrayList<CheckBlockInfo>());
     public boolean purgeRerender;
+    public double purgeX;
+    public double purgeY;
+    public double purgeZ;
 
     public boolean attemptLocalLoad;
 

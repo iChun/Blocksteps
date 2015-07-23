@@ -61,6 +61,10 @@ public class BlockStepHandler
                 Blocksteps.eventHandler.renderGlobalProxy.markBlockForUpdate(pos);
                 Blocksteps.eventHandler.repopulateBlocksToRender = true;
             }
+            while(steps.contains(pos))
+            {
+                steps.remove(pos);
+            }
             steps.add(pos);
             BlockStepHandler.getBlocksToRender(true, pos);
         }
