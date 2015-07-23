@@ -93,8 +93,18 @@ public class WindowWaypoints extends Window
         }
         else if(element.id == ID_DEL)
         {
-            //TODO pop up and ask?
-            //TODO remember to set the waypoint ident list to empty;
+            for(ElementListTree.Tree tree : list.trees)
+            {
+                if(tree.selected)
+                {
+                    workspace.addWindowOnTop(new WindowConfirmDelete(workspace, (Waypoint)tree.attachedObject).putInMiddleOfScreen());
+                    break;
+                }
+            }
+        }
+        else if(element.id == ID_DEL_MAP)
+        {
+            workspace.addWindowOnTop(new WindowConfirmDelete(workspace, null).putInMiddleOfScreen());
         }
         else if(element.id == ID_DONE)
         {

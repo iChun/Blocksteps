@@ -1,5 +1,6 @@
 package me.ichun.mods.blocksteps.common.gui.window;
 
+import com.google.common.base.Splitter;
 import me.ichun.mods.blocksteps.common.core.Waypoint;
 import me.ichun.mods.blocksteps.common.gui.GuiWaypoints;
 import net.minecraft.client.Minecraft;
@@ -92,6 +93,8 @@ public class WindowEditWaypoint extends Window
                     elementPosition.textFields.get(2).setText(Integer.toString(selectedWaypoint.pos.getZ()));
                     elementVisible.toggledState = selectedWaypoint.visible;
                     elementShowDistance.toggledState = selectedWaypoint.showDistance;
+                    elementEntityType.selected = selectedWaypoint.entityType.isEmpty() ? "Waypoint" : Splitter.on(".").splitToList(selectedWaypoint.entityType).get(Splitter.on(".").splitToList(selectedWaypoint.entityType).size() - 1);
+
                     float[] hsb = Color.RGBtoHSB(selectedWaypoint.colour >> 16 & 0xff, selectedWaypoint.colour >> 8 & 0xff, selectedWaypoint.colour & 0xff, null);
                     hsb[1] = hsb[2] = 1F;
                     colourHue = Color.HSBtoRGB(hsb[0], hsb[1], hsb[2]);
@@ -167,6 +170,10 @@ public class WindowEditWaypoint extends Window
             if(!(selectedWaypoint.pos.getX() == Integer.parseInt(elementPosition.textFields.get(0).getText()) && selectedWaypoint.pos.getY() == Integer.parseInt(elementPosition.textFields.get(1).getText()) && selectedWaypoint.pos.getZ() == Integer.parseInt(elementPosition.textFields.get(2).getText())))
             {
                 selectedWaypoint.pos = new BlockPos(Integer.parseInt(elementPosition.textFields.get(0).getText()), Integer.parseInt(elementPosition.textFields.get(1).getText()), Integer.parseInt(elementPosition.textFields.get(2).getText()));
+            }
+            if(selectedWaypoint.entityType.isEmpty() && !elementEntityType.selected.equals("Waypoint") || !elementEntityType.selected.equals(Splitter.on(".").splitToList(selectedWaypoint.entityType).get(Splitter.on(".").splitToList(selectedWaypoint.entityType).size() - 1)))
+            {
+                keyInput(elementEntityType);
             }
         }
     }

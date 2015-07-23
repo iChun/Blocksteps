@@ -48,6 +48,7 @@ public class GuiWaypoints extends IWorkspace
     public void onGuiClosed()
     {
         Keyboard.enableRepeatEvents(false);
+        //TODO RECREATE ENTITIES for entities
     }
 
     @Override

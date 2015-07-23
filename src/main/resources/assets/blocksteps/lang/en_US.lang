@@ -106,6 +106,9 @@ blocksteps.gui.deleteMap=Delete Map Storage
 
 blocksteps.gui.waypoints=Waypoints
 blocksteps.gui.editWaypoint=Edit Waypoint
+blocksteps.gui.areYouSure=Are you sure?
+blocksteps.gui.confirmDeleteWaypoint=Delete Waypoint?
+blocksteps.gui.confirmDeleteMap=Delete Map Data?
 
 blocksteps.waypoint.name=Waypoint name
 blocksteps.waypoint.pos=Position

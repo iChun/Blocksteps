@@ -11,12 +11,14 @@ public class MapSaveFile
     private MapSaveFile(){}
 
     public TreeMap<Integer, ArrayList<BlockPos>> stepPoints;
+    public TreeMap<Integer, ArrayList<Waypoint>> waypoints;
 
     public static MapSaveFile create()
     {
         MapSaveFile file = new MapSaveFile();
 
         file.stepPoints = new TreeMap<Integer, ArrayList<BlockPos>>(Blocksteps.eventHandler.steps);
+        file.waypoints = new TreeMap<Integer, ArrayList<Waypoint>>(Blocksteps.eventHandler.waypoints);
 
         return file;
     }
@@ -24,5 +26,6 @@ public class MapSaveFile
     public void load()
     {
         Blocksteps.eventHandler.steps = stepPoints;
+        Blocksteps.eventHandler.waypoints = waypoints;
     }
 }
