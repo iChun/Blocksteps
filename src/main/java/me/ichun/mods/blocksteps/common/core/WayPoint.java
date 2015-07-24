@@ -23,10 +23,12 @@ public class Waypoint
     public BlockPos pos;
     @SerializedName("c")
     public int colour;
-    @SerializedName("b")
+    @SerializedName("v")
     public boolean visible;
     @SerializedName("s")
     public boolean showDistance;
+    @SerializedName("b")
+    public boolean beam;
     @SerializedName("e")
     public String entityType;
 
@@ -50,7 +52,14 @@ public class Waypoint
         colour = (r << 16) + (g << 8) + (b);
         visible = true;
         showDistance = true;
+        beam = true;
         entityType = "";
+    }
+
+    public Waypoint setName(String name)
+    {
+        this.name = name;
+        return this;
     }
 
     @Override

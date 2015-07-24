@@ -54,7 +54,7 @@ public class WindowWaypoints extends Window
         ArrayList<Waypoint> keepOut = new ArrayList<Waypoint>();
         for(int i = creations.size() - 1; i >= 0; i--)
         {
-            if(creations.get(i).name.contains("New Waypoint"))
+            if(creations.get(i).name.contains("New Waypoint") || creations.get(i).name.contains("Death Location"))
             {
                 keepOut.add(creations.get(i));
                 creations.remove(i);
@@ -62,6 +62,7 @@ public class WindowWaypoints extends Window
         }
         list.trees.clear();
         Collections.sort(creations);
+        Collections.sort(keepOut);
         for(Waypoint wp : creations)
         {
             list.createTree(null, wp, 13, 0, false, false);
@@ -89,6 +90,7 @@ public class WindowWaypoints extends Window
             {
                 ArrayList<Waypoint> waypoints = Blocksteps.eventHandler.getWaypoints(mc.theWorld.provider.getDimensionId());
                 waypoints.add(new Waypoint(new BlockPos(mc.thePlayer)));
+                list.selectedIdentifier = waypoints.get(waypoints.size() - 1).getIdentifier();
             }
         }
         else if(element.id == ID_DEL)

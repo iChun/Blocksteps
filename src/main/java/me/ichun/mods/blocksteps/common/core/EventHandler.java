@@ -10,6 +10,7 @@ import me.ichun.mods.blocksteps.common.blockaid.ThreadCheckBlocks;
 import me.ichun.mods.blocksteps.common.gui.GuiWaypoints;
 import me.ichun.mods.blocksteps.common.layer.LayerSheepPig;
 import me.ichun.mods.blocksteps.common.render.RenderGlobalProxy;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.ScaledResolution;
@@ -27,9 +28,13 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.passive.EntityPig;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumWorldBlockLayer;
 import net.minecraft.util.MathHelper;
+import net.minecraft.world.World;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -66,7 +71,7 @@ public class EventHandler
         Minecraft mc = Minecraft.getMinecraft();
         if(event.phase == TickEvent.Phase.END)
         {
-            if(mc.thePlayer != null && !mc.gameSettings.hideGUI /*&& (mc.currentScreen == null || mc.currentScreen instanceof GuiChat)*/)
+            if(mc.thePlayer != null && !mc.gameSettings.hideGUI && (mc.currentScreen == null || mc.currentScreen instanceof GuiChat))
             {
                 ScaledResolution reso = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
                 float aScale = EntityHelperBase.interpolateValues(prevScale, scale, event.renderTickTime) / 100F;
@@ -326,6 +331,16 @@ public class EventHandler
             Entity entity = mc.getRenderViewEntity();
             int pass = 2;
 
+            PotionEffect effect = null;
+
+            if(Blocksteps.config.brightMap == 1)
+            {
+                effect = mc.thePlayer.getActivePotionEffect(Potion.nightVision);
+                mc.thePlayer.addPotionEffect(new PotionEffect(Potion.nightVision.getId(), 10, 1000));
+                mc.entityRenderer.updateTorchFlicker();
+                mc.entityRenderer.updateLightmap(1.0F);
+            }
+
             GlStateManager.shadeModel(GL11.GL_SMOOTH);
             Frustum frustum = new Frustum();
             double d0 = entity.lastTickPosX + (entity.posX - entity.lastTickPosX) * (double)partialTicks;
@@ -405,7 +420,22 @@ public class EventHandler
             }
 
             GlStateManager.shadeModel(GL11.GL_FLAT);
+
+            if(Blocksteps.config.brightMap == 1)
+            {
+                mc.thePlayer.removePotionEffectClient(Potion.nightVision.getId());
+                mc.entityRenderer.updateTorchFlicker();
+                mc.entityRenderer.updateLightmap(1.0F);
+                if(effect != null)
+                {
+                    mc.thePlayer.addPotionEffect(effect);
+                }
+            }
         }
+    }
+
+    public void renderWaypoints(Minecraft mc, float renderTick, double d, double d1, double d2)
+    {
     }
 
     @SubscribeEvent
@@ -692,6 +722,10 @@ public class EventHandler
                         oriAngleY = targetAngleY;
                         targetAngleY += 270F;
                     }
+                    else
+                    {
+                        hideWaypoints = !hideWaypoints;
+                    }
                 }
                 else if(event.keyBind.equals(Blocksteps.config.keyToggleFullscreen))
                 {
@@ -713,6 +747,17 @@ public class EventHandler
             }
         }
     }
+
+    @SubscribeEvent
+    public void onLivingDeath(LivingDeathEvent event)
+    {
+        if(event.entityLiving.worldObj.isRemote && Blocksteps.config.waypointOnDeath == 1 && event.entityLiving == Minecraft.getMinecraft().thePlayer)
+        {
+            ArrayList<Waypoint> waypoints = Blocksteps.eventHandler.getWaypoints(event.entityLiving.worldObj.provider.getDimensionId());
+            waypoints.add((new Waypoint(new BlockPos(event.entityLiving))).setName("Death Location"));
+        }
+    }
+
 
     public ArrayList<BlockPos> getSteps(int dimension)
     {
@@ -740,6 +785,7 @@ public class EventHandler
     public ThreadCheckBlocks threadCheckBlocks;
 
     public boolean renderingMinimap;
+    public boolean hideWaypoints;
 
     public float prevAngleY;
     public float prevAngleX;

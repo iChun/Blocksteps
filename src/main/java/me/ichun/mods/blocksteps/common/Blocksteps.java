@@ -2,14 +2,13 @@ package me.ichun.mods.blocksteps.common;
 
 import me.ichun.mods.blocksteps.common.core.Config;
 import me.ichun.mods.blocksteps.common.core.EventHandler;
-import me.ichun.mods.blocksteps.common.layer.LayerSheepPig;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.entity.RenderPig;
-import net.minecraft.entity.passive.EntityPig;
+import me.ichun.mods.blocksteps.common.entity.EntityWaypoint;
+import me.ichun.mods.blocksteps.common.render.RenderWaypoint;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import us.ichun.mods.ichunutil.common.core.Logger;
 import us.ichun.mods.ichunutil.common.core.config.ConfigHandler;
@@ -46,5 +45,11 @@ public class Blocksteps
         MinecraftForge.EVENT_BUS.register(eventHandler);
 
         ModVersionChecker.register_iChunMod(new ModVersionInfo(MODNAME, iChunUtil.versionOfMC, VERSION, true));
+    }
+
+    @Mod.EventHandler
+    public void load(FMLInitializationEvent event)
+    {
+        RenderingRegistry.registerEntityRenderingHandler(EntityWaypoint.class, new RenderWaypoint());
     }
 }

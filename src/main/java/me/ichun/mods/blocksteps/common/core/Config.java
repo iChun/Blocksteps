@@ -68,6 +68,10 @@ public class Config extends ConfigBase
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntBool
+    public int brightMap = 0;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
     public int waypointOnDeath = 0;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
@@ -76,7 +80,15 @@ public class Config extends ConfigBase
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntBool
-    public int waypointBeam = 1;
+    public int waypointIndicatorThroughBlocks = 0;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int waypointLabelThroughBlocks = 0;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 0)
+    public int waypointBeamHeightAdjust = 15;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = -180, max = 180)
