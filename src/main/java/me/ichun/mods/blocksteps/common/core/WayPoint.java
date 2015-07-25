@@ -338,19 +338,23 @@ public class Waypoint
             double dy = (this.pos.getY()) - d1;
             double dz = (this.pos.getZ() + 0.5D) - d2;
             double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-            if(dist < 16D || !inWorld)
+            if(dist < 116D || !inWorld)
             {
                 GlStateManager.translate(this.pos.getX() + 0.5D - d, this.pos.getY() - d1, this.pos.getZ() + 0.5D - d2);
             }
             else
             {
-                double distt = 16D / dist;
+                double distt = 116D / dist;
                 GlStateManager.translate((this.pos.getX() + 0.5D - d) * distt, ((this.pos.getY() - d1) * distt), (this.pos.getZ() + 0.5D - d2) * distt);
             }
             GL11.glNormal3f(0.0F, 1.0F, 0.0F);
             GlStateManager.rotate(-mc.getRenderManager().playerViewY, 0.0F, 1.0F, 0.0F);
             if(inWorld)
             {
+                if(dist > 16D)
+                {
+                    f1 *= Math.min(100D, dist) / 16D;
+                }
                 GlStateManager.rotate(mc.getRenderManager().playerViewX, 1.0F, 0.0F, 0.0F);
             }
             else
@@ -384,6 +388,22 @@ public class Waypoint
             {
                 b0 = -9;
                 str = String.format(Locale.ENGLISH, "%.2f", mc.thePlayer.getDistance(this.pos.getX() + 0.5D, this.pos.getY(), this.pos.getZ() + 0.5D)) + "m";
+                GlStateManager.disableTexture2D();
+                worldrenderer.startDrawingQuads();
+                j = fontrenderer.getStringWidth(str) / 2;
+                worldrenderer.setColorRGBA_F(0.0F, 0.0F, 0.0F, 0.25F);
+                worldrenderer.addVertex((double)(-j - 1), (double)(-1 + b0), 0.0D);
+                worldrenderer.addVertex((double)(-j - 1), (double)(8 + b0), 0.0D);
+                worldrenderer.addVertex((double)(j + 1), (double)(8 + b0), 0.0D);
+                worldrenderer.addVertex((double)(j + 1), (double)(-1 + b0), 0.0D);
+                tessellator.draw();
+                GlStateManager.enableTexture2D();
+                fontrenderer.drawString(str, -fontrenderer.getStringWidth(str) / 2, b0, clr);
+            }
+            if(mc.gameSettings.showDebugInfo)
+            {
+                b0 = 9;
+                str = "X:" + pos.getX() + " Y:" + pos.getY() + " Z:" + pos.getZ();
                 GlStateManager.disableTexture2D();
                 worldrenderer.startDrawingQuads();
                 j = fontrenderer.getStringWidth(str) / 2;

@@ -32,6 +32,7 @@ blocksteps.config.prop.surfaceHorizontalUpdateDistance.name=Surface Horizontal U
 blocksteps.config.prop.mapType.name=Map Type
 blocksteps.config.prop.mapLoad.name=Map Load Timer
 blocksteps.config.prop.mapShowEntities.name=Show Entities on Map
+blocksteps.config.prop.mapShowCoordinates.name=Show Player Coordinates
 blocksteps.config.prop.mapStartX.name=Actual Map Left Border
 blocksteps.config.prop.mapStartY.name=Actual Map Top Border
 blocksteps.config.prop.mapEndX.name=Actual Map Right Border
@@ -93,6 +94,7 @@ blocksteps.config.prop.surfaceHorizontalUpdateDistance.comment=How far the playe
 blocksteps.config.prop.mapType.comment=Current Map Type\n0 = Blocksteps, where only blocks you stepped on are visible. This type actually saves. \n   Blocksteps may be somewhat unoptimized, the community voted that I finished the mod and you are reading the configs of the completed contents.\n1 = Blocksteps + Surface, blocksteps mode and a mode called Surface, which, well, renders just the surface.\n2 = 3D Overview, you get a general 3D map of the area. This type does not require saving.
 blocksteps.config.prop.mapLoad.comment=Time to allow the actual world map to load before grabbing the world data for the mini-map render (in ticks).
 blocksteps.config.prop.mapShowEntities.comment=Show Entities on the map?\nFor Blocksteps map type, only entities on shown blocks will render.
+blocksteps.config.prop.mapShowCoordinates.comment=Show the player's coordinates on the bottom left of the map?
 blocksteps.config.prop.mapStartX.comment=The left border (in percentage of the screen) of the actual map to render.
 blocksteps.config.prop.mapStartY.comment=The top border (in percentage of the screen) of the actual map to render.
 blocksteps.config.prop.mapEndX.comment=The right border (in percentage of the screen) of the actual map to render.

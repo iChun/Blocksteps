@@ -151,6 +151,10 @@ public class Config extends ConfigBase
     public int mapShowEntities = 0;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int mapShowCoordinates = 0;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 0, max = 100)
     public int mapStartX = 70;
 

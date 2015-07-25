@@ -152,22 +152,33 @@ public class EventHandler
                     renderingMinimap = false;
                     RendererHelper.endGlScissor();
 
-                    if(mc.gameSettings.showDebugInfo)
+                    if(Blocksteps.config.mapShowCoordinates == 1 || mc.gameSettings.showDebugInfo)
                     {
                         GlStateManager.depthMask(false);
                         GlStateManager.disableDepth();
-                        int count = 0;
-                        mc.fontRendererObj.drawString("Steps loaded: " + getSteps(mc.theWorld.provider.getDimensionId()).size(), x + 2, y + 2 + (10 * count++), 0xffffff);
-                        mc.fontRendererObj.drawString("Waypoints: " + getWaypoints(mc.theWorld.provider.getDimensionId()).size(), x + 2, y + 2 + (10 * count++), 0xffffff);
-                        mc.fontRendererObj.drawString(!hideWaypoints ? "Showing waypoints" : "Hiding waypoints", x + 2, y + 2 + (10 * count++), 0xffffff);
-                        mc.fontRendererObj.drawString("Map Type: " + Blocksteps.config.mapType, x + 2, y + 2 + (10 * count++), 0xffffff);
+                        if(Blocksteps.config.mapShowCoordinates == 1)
+                        {
+                            GlStateManager.pushMatrix();
+                            float scale = 0.5F;
+                            GlStateManager.scale(scale, scale, scale);
+                            mc.fontRendererObj.drawString("X:" + String.format(Locale.ENGLISH, "%.2f", mc.thePlayer.posX) + " Y:" + String.format(Locale.ENGLISH, "%.2f", mc.thePlayer.posY) + " Z:" + String.format(Locale.ENGLISH, "%.2f", mc.thePlayer.posZ), (int)((x + 2) / scale), (int)((y + height - 1) / scale) - mc.fontRendererObj.FONT_HEIGHT, 0xffffff);
+                            GlStateManager.popMatrix();
+                        }
+                        if(mc.gameSettings.showDebugInfo)
+                        {
+                            int count = 0;
+                            mc.fontRendererObj.drawString("Steps loaded: " + getSteps(mc.theWorld.provider.getDimensionId()).size(), x + 2, y + 2 + (10 * count++), 0xffffff);
+                            mc.fontRendererObj.drawString("Waypoints: " + getWaypoints(mc.theWorld.provider.getDimensionId()).size(), x + 2, y + 2 + (10 * count++), 0xffffff);
+                            mc.fontRendererObj.drawString(!hideWaypoints ? "Showing waypoints" : "Hiding waypoints", x + 2, y + 2 + (10 * count++), 0xffffff);
+                            mc.fontRendererObj.drawString("Map Type: " + Blocksteps.config.mapType, x + 2, y + 2 + (10 * count++), 0xffffff);
 
 
-                        //                        RendererHelper.drawGradientOnScreen(0xff000000, 0xff000000, 0xffffffff, Color.HSBtoRGB((mc.thePlayer.ticksExisted + event.renderTickTime % 100) / 100F, 1F, 1F), x, y, height, height, 0D);
-                        //                        RendererHelper.drawGradientOnScreen(0xff0000ff, 0xff0000ff, 0xffff0000, 0xffff0000, x, y, height, height / 3D, 0D);
-                        //                        RendererHelper.drawGradientOnScreen(0xff00ff00, 0xff00ff00, 0xff0000ff, 0xff0000ff, x, y + height / 3D, height, height / 3D, 0D);
-                        //                        RendererHelper.drawGradientOnScreen(0xffff0000, 0xffff0000, 0xff00ff00, 0xff00ff00, x, y + height / 3D + height / 3D, height, height / 3D, 0D);
-                        //                        RendererHelper.drawHueStripOnScreen(255, x, y, height, height, 0D);
+                            //                        RendererHelper.drawGradientOnScreen(0xff000000, 0xff000000, 0xffffffff, Color.HSBtoRGB((mc.thePlayer.ticksExisted + event.renderTickTime % 100) / 100F, 1F, 1F), x, y, height, height, 0D);
+                            //                        RendererHelper.drawGradientOnScreen(0xff0000ff, 0xff0000ff, 0xffff0000, 0xffff0000, x, y, height, height / 3D, 0D);
+                            //                        RendererHelper.drawGradientOnScreen(0xff00ff00, 0xff00ff00, 0xff0000ff, 0xff0000ff, x, y + height / 3D, height, height / 3D, 0D);
+                            //                        RendererHelper.drawGradientOnScreen(0xffff0000, 0xffff0000, 0xff00ff00, 0xff00ff00, x, y + height / 3D + height / 3D, height, height / 3D, 0D);
+                            //                        RendererHelper.drawHueStripOnScreen(255, x, y, height, height, 0D);
+                        }
                         GlStateManager.enableDepth();
                         GlStateManager.depthMask(true);
                     }
@@ -839,12 +850,12 @@ public class EventHandler
         HashSet<BlockPos> blocksToRender = Blocksteps.eventHandler.blocksToRender;
         if(Blocksteps.config.mapType == 2)
         {
-            blocksToRender = new HashSet<BlockPos>();
-            blocksToRender.addAll(Blocksteps.eventHandler.blocksToRender);
-            synchronized(Blocksteps.eventHandler.threadCrawlBlocks.surface)
-            {
-                blocksToRender.addAll(Blocksteps.eventHandler.threadCrawlBlocks.surface);
-            }
+//            blocksToRender = new HashSet<BlockPos>();
+//            blocksToRender.addAll(Blocksteps.eventHandler.blocksToRender);
+//            synchronized(Blocksteps.eventHandler.threadCrawlBlocks.surface)
+//            {
+//                blocksToRender.addAll(Blocksteps.eventHandler.threadCrawlBlocks.surface);
+//            }
         }
         return blocksToRender;
     }
