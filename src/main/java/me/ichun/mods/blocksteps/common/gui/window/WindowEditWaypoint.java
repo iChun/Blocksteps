@@ -43,6 +43,7 @@ public class WindowEditWaypoint extends Window
     public ElementToggle elementBeam;
     public ElementSelector elementEntityType;
     public ElementTextInput elementColour;
+    public ElementNumberInput elementRenderRange;
 
     public static final int ID_CURRENT_POS = 100;
 
@@ -84,6 +85,22 @@ public class WindowEditWaypoint extends Window
 
         elements.add(elementEntityType);
 
+        elementRenderRange = new ElementNumberInput(this, parent.width - 70, 140, 80, 12, 1, "blocksteps.waypoint.renderRangeTooltip", 1, false, 0, Integer.MAX_VALUE) {
+            @Override
+            public void resized()
+            {
+                posX = parent.width - width - 10;
+                for(int i = 0; i < textFields.size(); i++)
+                {
+                    textFields.get(i).xPosition = parent.posX + posX + 2 + ((width / textFields.size()) * i);
+                    textFields.get(i).yPosition = parent.posY + posY + 2;
+                    textFields.get(i).width = (width / textFields.size()) - 18;
+                    textFields.get(i).setCursorPositionZero();
+                }
+            }
+        };
+        elements.add(elementRenderRange);
+
         elementColour = new ElementTextInput(this, 0, 0, 50, 12, 0, "blocksteps.waypoint.colour", 6);
         elements.add(elementColour);
 
@@ -121,6 +138,7 @@ public class WindowEditWaypoint extends Window
                         clr = "0" + clr;
                     }
                     elementColour.textField.setText(clr);
+                    elementRenderRange.textFields.get(0).setText(Integer.toString(selectedWaypoint.renderRange));
                 }
                 break;
             }
@@ -133,6 +151,7 @@ public class WindowEditWaypoint extends Window
             workspace.getFontRenderer().drawString(StatCollector.translateToLocal("blocksteps.waypoint.name"), posX + 11, posY + 20, Theme.getAsHex(workspace.currentTheme.font), false);
             workspace.getFontRenderer().drawString(StatCollector.translateToLocal("blocksteps.waypoint.pos"), posX + 11, posY + 50, Theme.getAsHex(workspace.currentTheme.font), false);
             workspace.getFontRenderer().drawString(StatCollector.translateToLocal("blocksteps.waypoint.entityType"), posX + 11, posY + 100, Theme.getAsHex(workspace.currentTheme.font), false);
+            workspace.getFontRenderer().drawString(StatCollector.translateToLocal("blocksteps.waypoint.renderRange"), posX + width - 10 - workspace.getFontRenderer().getStringWidth(StatCollector.translateToLocal("blocksteps.waypoint.renderRange")), posY + 130, Theme.getAsHex(workspace.currentTheme.font), false);
 
             int x = posX + 11;
             int y = posY + height - 12;
@@ -293,6 +312,15 @@ public class WindowEditWaypoint extends Window
                     hsb[1] = hsb[2] = 1F;
                     colourHue = Color.HSBtoRGB(hsb[0], hsb[1], hsb[2]);
                     selectedWaypoint.colour = i;
+                }
+                catch(NumberFormatException ignored){}
+            }
+            else if(e == elementRenderRange)
+            {
+                try
+                {
+                    int i = Integer.parseInt(elementRenderRange.textFields.get(0).getText());
+                    selectedWaypoint.renderRange = i;
                 }
                 catch(NumberFormatException ignored){}
             }

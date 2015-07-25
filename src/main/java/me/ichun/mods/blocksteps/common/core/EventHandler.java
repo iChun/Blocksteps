@@ -13,6 +13,7 @@ import me.ichun.mods.blocksteps.common.render.RenderGlobalProxy;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
+import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.GlStateManager;
@@ -45,6 +46,7 @@ import org.lwjgl.opengl.GL11;
 import us.ichun.mods.ichunutil.client.keybind.KeyEvent;
 import us.ichun.mods.ichunutil.client.render.RendererHelper;
 import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
+import us.ichun.mods.ichunutil.common.core.event.RenderAtPlayerEvent;
 import us.ichun.mods.ichunutil.common.core.event.RendererSafeCompatibilityEvent;
 import us.ichun.mods.ichunutil.common.core.util.IOUtil;
 import us.ichun.mods.ichunutil.common.core.util.ResourceHelper;
@@ -156,13 +158,17 @@ public class EventHandler
                     {
                         GlStateManager.depthMask(false);
                         GlStateManager.disableDepth();
-                        mc.fontRendererObj.drawString("Steps loaded: " + getSteps(mc.theWorld.provider.getDimensionId()).size(), x + 2, y + 2, 0xffffff);
+                        int count = 0;
+                        mc.fontRendererObj.drawString("Steps loaded: " + getSteps(mc.theWorld.provider.getDimensionId()).size(), x + 2, y + 2 + (10 * count++), 0xffffff);
+                        mc.fontRendererObj.drawString("Waypoints: " + getWaypoints(mc.theWorld.provider.getDimensionId()).size(), x + 2, y + 2 + (10 * count++), 0xffffff);
+                        mc.fontRendererObj.drawString(!hideWaypoints ? "Showing waypoints" : "Hiding waypoints", x + 2, y + 2 + (10 * count++), 0xffffff);
 
-//                        RendererHelper.drawGradientOnScreen(0xff000000, 0xff000000, 0xffffffff, Color.HSBtoRGB((mc.thePlayer.ticksExisted + event.renderTickTime % 100) / 100F, 1F, 1F), x, y, height, height, 0D);
+
+                        //                        RendererHelper.drawGradientOnScreen(0xff000000, 0xff000000, 0xffffffff, Color.HSBtoRGB((mc.thePlayer.ticksExisted + event.renderTickTime % 100) / 100F, 1F, 1F), x, y, height, height, 0D);
 //                        RendererHelper.drawGradientOnScreen(0xff0000ff, 0xff0000ff, 0xffff0000, 0xffff0000, x, y, height, height / 3D, 0D);
 //                        RendererHelper.drawGradientOnScreen(0xff00ff00, 0xff00ff00, 0xff0000ff, 0xff0000ff, x, y + height / 3D, height, height / 3D, 0D);
 //                        RendererHelper.drawGradientOnScreen(0xffff0000, 0xffff0000, 0xff00ff00, 0xff00ff00, x, y + height / 3D + height / 3D, height, height / 3D, 0D);
-                        RendererHelper.drawHueStripOnScreen(255, x, y, height, height, 0D);
+//                        RendererHelper.drawHueStripOnScreen(255, x, y, height, height, 0D);
                         GlStateManager.enableDepth();
                         GlStateManager.depthMask(true);
                     }
@@ -253,7 +259,15 @@ public class EventHandler
             }
             if(mc.theWorld != null)
             {
-                if(attemptLocalLoad)
+                if(mc.currentScreen instanceof GuiIngameMenu && fullscreen)
+                {
+                    mc.displayGuiScreen(null);
+                    fullscreen = false;
+                    fullscreenTimeout = 3;
+                    targetOffsetX = targetOffsetY = prevOffsetX = prevOffsetY = offsetX = offsetY = 0F;
+                }
+
+                if(attemptLocalLoad && mc.theWorld.getSpawnPoint().hashCode() != 9680 && saveLocation == null)//9680 default world spawn.
                 {
                     attemptLocalLoad = false;
                     saveLocation = new File(new File(ResourceHelper.getModsFolder(), "/blocksteps/local/"), mc.theWorld.getSpawnPoint().hashCode() + ".bsv");
@@ -628,6 +642,7 @@ public class EventHandler
             for(Waypoint wp : e.getValue())
             {
                 wp.entityInstance = null; //prevents memleaks
+                wp.errored = false;
             }
         }
     }
@@ -758,6 +773,30 @@ public class EventHandler
         }
     }
 
+    @SubscribeEvent
+    public void onRenderAtPlayer(RenderAtPlayerEvent event)
+    {
+        if(Blocksteps.config.waypointRenderInWorld == 1 && !Blocksteps.eventHandler.hideWaypoints)
+        {
+            Minecraft mc = Minecraft.getMinecraft();
+            RenderManager renderManager = mc.getRenderManager();
+            ArrayList<Waypoint> points = Blocksteps.eventHandler.getWaypoints(mc.theWorld.provider.getDimensionId());
+            Blocksteps.eventHandler.renderingMinimap = true;
+            GlStateManager.disableFog();
+            for(Waypoint wp : points)
+            {
+                double dx = mc.thePlayer.posX - (wp.pos.getX() + 0.5D);
+                double dz = mc.thePlayer.posZ - (wp.pos.getZ() + 0.5D);
+                double dist = Math.sqrt(dx * dx + dz * dz);
+                if(dist < wp.renderRange)
+                {
+                    wp.render(renderManager.renderPosX, renderManager.renderPosY, renderManager.renderPosZ, event.renderTick, true);
+                }
+            }
+            GlStateManager.enableFog();
+            Blocksteps.eventHandler.renderingMinimap = false;
+        }
+    }
 
     public ArrayList<BlockPos> getSteps(int dimension)
     {

@@ -88,7 +88,15 @@ public class Config extends ConfigBase
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 0)
+    public int waypointLabelSize = 20;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 0)
     public int waypointBeamHeightAdjust = 15;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntBool
+    public int waypointRenderInWorld = 1;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = -180, max = 180)
