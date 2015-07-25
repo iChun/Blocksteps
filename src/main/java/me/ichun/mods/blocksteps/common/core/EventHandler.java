@@ -6,14 +6,15 @@ import com.google.gson.Gson;
 import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.blockaid.BlockStepHandler;
 import me.ichun.mods.blocksteps.common.blockaid.CheckBlockInfo;
-import me.ichun.mods.blocksteps.common.blockaid.ThreadCheckBlocks;
 import me.ichun.mods.blocksteps.common.gui.GuiWaypoints;
 import me.ichun.mods.blocksteps.common.layer.LayerSheepPig;
 import me.ichun.mods.blocksteps.common.render.RenderGlobalProxy;
-import net.minecraft.block.Block;
+import me.ichun.mods.blocksteps.common.thread.ThreadBlockCrawler;
+import me.ichun.mods.blocksteps.common.thread.ThreadCheckBlocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiIngameMenu;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.GlStateManager;
@@ -34,7 +35,6 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumWorldBlockLayer;
 import net.minecraft.util.MathHelper;
-import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -51,12 +51,10 @@ import us.ichun.mods.ichunutil.common.core.event.RendererSafeCompatibilityEvent;
 import us.ichun.mods.ichunutil.common.core.util.IOUtil;
 import us.ichun.mods.ichunutil.common.core.util.ResourceHelper;
 
-import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.*;
-import java.util.List;
 
 public class EventHandler
 {
@@ -162,13 +160,14 @@ public class EventHandler
                         mc.fontRendererObj.drawString("Steps loaded: " + getSteps(mc.theWorld.provider.getDimensionId()).size(), x + 2, y + 2 + (10 * count++), 0xffffff);
                         mc.fontRendererObj.drawString("Waypoints: " + getWaypoints(mc.theWorld.provider.getDimensionId()).size(), x + 2, y + 2 + (10 * count++), 0xffffff);
                         mc.fontRendererObj.drawString(!hideWaypoints ? "Showing waypoints" : "Hiding waypoints", x + 2, y + 2 + (10 * count++), 0xffffff);
+                        mc.fontRendererObj.drawString("Map Type: " + Blocksteps.config.mapType, x + 2, y + 2 + (10 * count++), 0xffffff);
 
 
                         //                        RendererHelper.drawGradientOnScreen(0xff000000, 0xff000000, 0xffffffff, Color.HSBtoRGB((mc.thePlayer.ticksExisted + event.renderTickTime % 100) / 100F, 1F, 1F), x, y, height, height, 0D);
-//                        RendererHelper.drawGradientOnScreen(0xff0000ff, 0xff0000ff, 0xffff0000, 0xffff0000, x, y, height, height / 3D, 0D);
-//                        RendererHelper.drawGradientOnScreen(0xff00ff00, 0xff00ff00, 0xff0000ff, 0xff0000ff, x, y + height / 3D, height, height / 3D, 0D);
-//                        RendererHelper.drawGradientOnScreen(0xffff0000, 0xffff0000, 0xff00ff00, 0xff00ff00, x, y + height / 3D + height / 3D, height, height / 3D, 0D);
-//                        RendererHelper.drawHueStripOnScreen(255, x, y, height, height, 0D);
+                        //                        RendererHelper.drawGradientOnScreen(0xff0000ff, 0xff0000ff, 0xffff0000, 0xffff0000, x, y, height, height / 3D, 0D);
+                        //                        RendererHelper.drawGradientOnScreen(0xff00ff00, 0xff00ff00, 0xff0000ff, 0xff0000ff, x, y + height / 3D, height, height / 3D, 0D);
+                        //                        RendererHelper.drawGradientOnScreen(0xffff0000, 0xffff0000, 0xff00ff00, 0xff00ff00, x, y + height / 3D + height / 3D, height, height / 3D, 0D);
+                        //                        RendererHelper.drawHueStripOnScreen(255, x, y, height, height, 0D);
                         GlStateManager.enableDepth();
                         GlStateManager.depthMask(true);
                     }
@@ -448,10 +447,6 @@ public class EventHandler
         }
     }
 
-    public void renderWaypoints(Minecraft mc, float renderTick, double d, double d1, double d2)
-    {
-    }
-
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event)
     {
@@ -562,6 +557,13 @@ public class EventHandler
                 {
                     repopulateBlocksToRender = purgeRerender = true;
                 }
+                if(mc.getRenderViewEntity().ticksExisted > Blocksteps.config.mapLoad && mc.getRenderViewEntity().getDistance(surfaceX, surfaceY, surfaceZ) > Blocksteps.config.surfaceHorizontalUpdateDistance)
+                {
+                    surfaceX = mc.getRenderViewEntity().posX;
+                    surfaceY = mc.getRenderViewEntity().posY;
+                    surfaceZ = mc.getRenderViewEntity().posZ;
+                    threadCrawlBlocks.needChecks = true;
+                }
             }
             if(fullscreenTimeout-- > 0);
         }
@@ -626,6 +628,9 @@ public class EventHandler
             renderGlobalProxy = new RenderGlobalProxy(Minecraft.getMinecraft());
             threadCheckBlocks = new ThreadCheckBlocks();
             threadCheckBlocks.start();
+
+            threadCrawlBlocks = new ThreadBlockCrawler();
+            threadCrawlBlocks.start();
 
             arrowCompass.prevRotationYaw = arrowCompass.rotationYaw = 180F;
         }
@@ -751,8 +756,17 @@ public class EventHandler
                         targetOffsetX = targetOffsetY = prevOffsetX = prevOffsetY = offsetX = offsetY = 0F;
                     }
                 }
-                else if(event.keyBind.equals(Blocksteps.config.keyPurgeRerender))
+                else if(event.keyBind.equals(Blocksteps.config.keySwitchMapMode))
                 {
+                    if(!GuiScreen.isShiftKeyDown())
+                    {
+                        Blocksteps.config.mapType++;
+                        if(Blocksteps.config.mapType > 3)
+                        {
+                            Blocksteps.config.mapType = 1;
+                        }
+                        Blocksteps.config.save();
+                    }
                     repopulateBlocksToRender = purgeRerender = true;
                 }
                 else if(event.keyBind.equals(Blocksteps.config.keyWaypoints))
@@ -820,8 +834,24 @@ public class EventHandler
         return dimPoints;
     }
 
+    public HashSet<BlockPos> getBlocksToRender()
+    {
+        HashSet<BlockPos> blocksToRender = Blocksteps.eventHandler.blocksToRender;
+        if(Blocksteps.config.mapType == 2)
+        {
+            blocksToRender = new HashSet<BlockPos>();
+            blocksToRender.addAll(Blocksteps.eventHandler.blocksToRender);
+            synchronized(Blocksteps.eventHandler.threadCrawlBlocks.surface)
+            {
+                blocksToRender.addAll(Blocksteps.eventHandler.threadCrawlBlocks.surface);
+            }
+        }
+        return blocksToRender;
+    }
+
     public RenderGlobalProxy renderGlobalProxy;
     public ThreadCheckBlocks threadCheckBlocks;
+    public ThreadBlockCrawler threadCrawlBlocks;
 
     public boolean renderingMinimap;
     public boolean hideWaypoints;
@@ -864,6 +894,10 @@ public class EventHandler
     public double purgeX;
     public double purgeY;
     public double purgeZ;
+
+    public double surfaceX;
+    public double surfaceY;
+    public double surfaceZ;
 
     public boolean attemptLocalLoad;
 

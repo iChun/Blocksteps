@@ -27,6 +27,8 @@ blocksteps.config.prop.camPanVertical.name=Camera Pan Vertical
 blocksteps.config.prop.camZoom.name=Camera Zoom
 blocksteps.config.prop.camPosX.name=Camera Horizontal Position
 blocksteps.config.prop.camPosY.name=Camera Vertical Position
+blocksteps.config.prop.surfaceDepth.name=Surface Depth
+blocksteps.config.prop.surfaceHorizontalUpdateDistance.name=Surface Horizontal Update Distance
 blocksteps.config.prop.mapType.name=Map Type
 blocksteps.config.prop.mapLoad.name=Map Load Timer
 blocksteps.config.prop.mapShowEntities.name=Show Entities on Map
@@ -54,7 +56,7 @@ blocksteps.config.prop.keyCamZoomIn.name=Camera Zoom In
 blocksteps.config.prop.keyCamZoomOut.name=Camera Zoom Out
 blocksteps.config.prop.keyToggle.name=Mini-Map Toggle
 blocksteps.config.prop.keyToggleFullscreen.name=Toggle Full Screen
-blocksteps.config.prop.keyPurgeRerender.name=Purge Rerender
+blocksteps.config.prop.keySwitchMapMode.name=Switch Map Mode/Rerender
 blocksteps.config.prop.keyWaypoints.name=Waypoints
 
 blocksteps.config.prop.renderBlockCount.comment=The maximum number of blocks to track on each server for rendering.
@@ -86,7 +88,9 @@ blocksteps.config.prop.camPanVertical.comment=Amount (in degrees) to pan the cam
 blocksteps.config.prop.camZoom.comment=Amount to zoom when the keys are hit.
 blocksteps.config.prop.camPosX.comment=Position of the camera horizontally (in percentage) on the map.
 blocksteps.config.prop.camPosY.comment=Position of the camera vertically (in percentage) on the map.
-blocksteps.config.prop.mapType.comment=Current Map Type\n0 = Blocksteps, where only blocks you stepped on are visible. This type actually saves. \n   Blocksteps may be somewhat unoptimized, the community voted that I finished the mod and you are reading the configs of the completed contents.\n1 = 3D Overview, you get a general 3D map of the area. This type does require saving.
+blocksteps.config.prop.surfaceDepth.comment=How deep the surface search should be.
+blocksteps.config.prop.surfaceHorizontalUpdateDistance.comment=How far the player must travel (in blocks) horizontally before the map tries to update the surface blocks again.
+blocksteps.config.prop.mapType.comment=Current Map Type\n0 = Blocksteps, where only blocks you stepped on are visible. This type actually saves. \n   Blocksteps may be somewhat unoptimized, the community voted that I finished the mod and you are reading the configs of the completed contents.\n1 = Blocksteps + Surface, blocksteps mode and a mode called Surface, which, well, renders just the surface.\n2 = 3D Overview, you get a general 3D map of the area. This type does not require saving.
 blocksteps.config.prop.mapLoad.comment=Time to allow the actual world map to load before grabbing the world data for the mini-map render (in ticks).
 blocksteps.config.prop.mapShowEntities.comment=Show Entities on the map?\nFor Blocksteps map type, only entities on shown blocks will render.
 blocksteps.config.prop.mapStartX.comment=The left border (in percentage of the screen) of the actual map to render.
@@ -113,7 +117,7 @@ blocksteps.config.prop.keyCamZoomIn.comment=Key to zoom in.
 blocksteps.config.prop.keyCamZoomOut.comment=Key to zoom out.
 blocksteps.config.prop.keyToggle.comment=Key to toggle the mini-map. Toggles waypoints when in fullscreen.
 blocksteps.config.prop.keyToggleFullscreen.comment=Key to toggle full screen.
-blocksteps.config.prop.keyPurgeRerender.comment=Sometimes, the world data isn't available when the world is loaded.\nUse this key to purge a rerender and recollect block data.
+blocksteps.config.prop.keySwitchMapMode.comment=Key toggles between the available map modes.\n\nSometimes, the world data isn't available when the world is loaded.\nHold SHIFT and Use this key to purge a rerender and recollect block data.
 blocksteps.config.prop.keyWaypoints.comment=Key to show the waypoints menu.
 
 blocksteps.gui.newWaypoint=New Waypoint

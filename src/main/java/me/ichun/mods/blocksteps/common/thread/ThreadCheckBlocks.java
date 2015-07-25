@@ -1,5 +1,6 @@
-package me.ichun.mods.blocksteps.common.blockaid;
+package me.ichun.mods.blocksteps.common.thread;
 
+import me.ichun.mods.blocksteps.common.blockaid.CheckBlockInfo;
 import net.minecraft.client.Minecraft;
 
 import java.util.ArrayList;

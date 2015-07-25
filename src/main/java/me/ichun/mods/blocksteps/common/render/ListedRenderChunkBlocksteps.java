@@ -19,7 +19,6 @@ import net.minecraft.world.World;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 
 public class ListedRenderChunkBlocksteps extends ListedRenderChunk
 {
@@ -32,7 +31,6 @@ public class ListedRenderChunkBlocksteps extends ListedRenderChunk
     public void rebuildChunk(float x, float y, float z, ChunkCompileTaskGenerator generator)
     {
         CompiledChunk compiledchunk = new CompiledChunk();
-        boolean flag = true;
         BlockPos blockpos = this.position;
         BlockPos blockpos1 = blockpos.add(15, 15, 15);
         generator.getLock().lock();
@@ -56,7 +54,7 @@ public class ListedRenderChunkBlocksteps extends ListedRenderChunk
         VisGraph visgraph = new VisGraph();
 
         Minecraft mc = Minecraft.getMinecraft();
-        HashSet<BlockPos> blocksToRender = Blocksteps.eventHandler.blocksToRender;
+        HashSet<BlockPos> blocksToRender = Blocksteps.eventHandler.getBlocksToRender();
 
         if (!regionrendercache.extendedLevelsInChunkCache())
         {

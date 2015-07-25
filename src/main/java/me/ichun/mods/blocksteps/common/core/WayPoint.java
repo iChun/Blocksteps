@@ -16,6 +16,7 @@ import net.minecraft.entity.passive.EntitySheep;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.lwjgl.opengl.GL11;
@@ -265,7 +266,7 @@ public class Waypoint
                         e.printStackTrace();
                     }
                 }
-                if(this.entityInstance != null && !errored)
+                if(this.entityInstance != null && !errored && mc.thePlayer.getDistanceToEntity(entityInstance) < 150D)
                 {
                     double dd0 = this.entityInstance.lastTickPosX + (this.entityInstance.posX - this.entityInstance.lastTickPosX) * (double)partialTicks;
                     double dd1 = this.entityInstance.lastTickPosY + (this.entityInstance.posY - this.entityInstance.lastTickPosY) * (double)partialTicks;
@@ -334,15 +335,23 @@ public class Waypoint
             float f = Blocksteps.config.waypointLabelSize / 10F;
             float f1 = 0.016666668F * f;
             GlStateManager.pushMatrix();
-            GlStateManager.translate(this.pos.getX() + 0.5D - d, this.pos.getY() - d1, this.pos.getZ() + 0.5D - d2);
+            double dx = (this.pos.getX() + 0.5D) - d;
+            double dy = (this.pos.getY()) - d1;
+            double dz = (this.pos.getZ() + 0.5D) - d2;
+            double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            if(dist < 16D || !inWorld)
+            {
+                GlStateManager.translate(this.pos.getX() + 0.5D - d, this.pos.getY() - d1, this.pos.getZ() + 0.5D - d2);
+            }
+            else
+            {
+                double distt = 16D / dist;
+                GlStateManager.translate((this.pos.getX() + 0.5D - d) * distt, ((this.pos.getY() - d1) * distt), (this.pos.getZ() + 0.5D - d2) * distt);
+            }
             GL11.glNormal3f(0.0F, 1.0F, 0.0F);
             GlStateManager.rotate(-mc.getRenderManager().playerViewY, 0.0F, 1.0F, 0.0F);
             if(inWorld)
             {
-                double dx = mc.thePlayer.posX - (this.pos.getX() + 0.5D);
-                double dz = mc.thePlayer.posZ - (this.pos.getZ() + 0.5D);
-                double dist = Math.sqrt(dx * dx + dz * dz);
-                f1 *= Math.max(1D, dist / 16D);
                 GlStateManager.rotate(mc.getRenderManager().playerViewX, 1.0F, 0.0F, 0.0F);
             }
             else

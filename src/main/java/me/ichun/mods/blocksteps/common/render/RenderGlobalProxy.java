@@ -2,41 +2,30 @@ package me.ichun.mods.blocksteps.common.render;
 
 import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.core.Waypoint;
-import me.ichun.mods.blocksteps.common.entity.EntityWaypoint;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.boss.EntityDragon;
-import net.minecraft.entity.passive.EntityPig;
-import net.minecraft.entity.passive.EntitySheep;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityWitherSkull;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.EnumDyeColor;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
-import us.ichun.mods.ichunutil.client.render.RendererHelper;
-import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 @SideOnly(Side.CLIENT)
 public class RenderGlobalProxy extends RenderGlobal
@@ -331,7 +320,9 @@ public class RenderGlobalProxy extends RenderGlobal
             return true;
         }
 
-        return Blocksteps.config.mapShowEntities == 1 && (Blocksteps.eventHandler.blocksToRender.contains(pos) || Blocksteps.eventHandler.blocksToRender.contains(pos.add(0, -1, 0)) || Blocksteps.eventHandler.blocksToRender.contains(pos.add(0, -2, 0)));
+        HashSet<BlockPos> blocksToRender = Blocksteps.eventHandler.getBlocksToRender();
+
+        return Blocksteps.config.mapShowEntities == 1 && (blocksToRender.contains(pos) || blocksToRender.contains(pos.add(0, -1, 0)) || blocksToRender.contains(pos.add(0, -2, 0)));
     }
 
     /**

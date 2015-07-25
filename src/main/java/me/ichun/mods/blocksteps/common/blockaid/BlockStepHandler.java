@@ -131,6 +131,11 @@ public class BlockStepHandler
 
     public static void addPeripherals(World world, BlockPos oriPos, List<BlockPos> renderPos)
     {
+        addPeripherals(world, oriPos, renderPos, true);
+    }
+
+    public static void addPeripherals(World world, BlockPos oriPos, List<BlockPos> renderPos, boolean useThread)
+    {
         if(Blocksteps.config.stepPeripherals == 1)
         {
             ArrayList<BlockPos> periphs = new ArrayList<BlockPos>();
@@ -140,7 +145,7 @@ public class BlockStepHandler
                 IBlockState state = world.getBlockState(periph);
                 if(isBlockTypePeripheral(world, periph, state.getBlock(), state, renderPos))
                 {
-                    if(getBlockPeripheralHandler(state.getBlock()).requireThread() && Blocksteps.eventHandler.threadCheckBlocks != null)
+                    if(getBlockPeripheralHandler(state.getBlock()).requireThread() && Blocksteps.eventHandler.threadCheckBlocks != null && useThread)
                     {
                         synchronized(Blocksteps.eventHandler.threadCheckBlocks.checks)
                         {

@@ -131,8 +131,16 @@ public class Config extends ConfigBase
     public int camPosY = 50;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
-    @IntMinMax(min = 0, max = 1)
-    public int mapType = 0;
+    @IntMinMax(min = 1, max = 256)
+    public int surfaceDepth = 2;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 1, max = 256)
+    public int surfaceHorizontalUpdateDistance = 16;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 1, max = 3)
+    public int mapType = 1;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 20, max = 500)
@@ -224,7 +232,7 @@ public class Config extends ConfigBase
     public KeyBind keyToggleFullscreen = new KeyBind(Keyboard.KEY_NUMPAD7, false, false, false, false);
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
-    public KeyBind keyPurgeRerender = new KeyBind(Keyboard.KEY_NUMPAD1, false, false, false, false);
+    public KeyBind keySwitchMapMode = new KeyBind(Keyboard.KEY_NUMPAD1, false, false, false, false);
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     public KeyBind keyWaypoints = new KeyBind(Keyboard.KEY_NUMPAD0, false, false, false, false);
