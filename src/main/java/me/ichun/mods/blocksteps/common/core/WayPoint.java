@@ -16,7 +16,6 @@ import net.minecraft.entity.passive.EntitySheep;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.lwjgl.opengl.GL11;
