@@ -1,6 +1,5 @@
 package me.ichun.mods.blocksteps.common.render;
 
-import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.core.ChunkStore;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.RegionRenderCache;

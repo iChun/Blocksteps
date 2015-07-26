@@ -2,16 +2,13 @@ package me.ichun.mods.blocksteps.common.thread;
 
 import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.blockaid.BlockStepHandler;
-import me.ichun.mods.blocksteps.common.blockaid.CheckBlockInfo;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.ChunkCoordIntPair;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ThreadBlockCrawler extends Thread
 {

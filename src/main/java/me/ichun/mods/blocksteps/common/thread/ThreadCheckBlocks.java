@@ -10,6 +10,7 @@ import java.util.List;
 public class ThreadCheckBlocks extends Thread
 {
     public final List<CheckBlockInfo> checks = Collections.synchronizedList(new ArrayList<CheckBlockInfo>());
+    public ArrayList<CheckBlockInfo> checksList = new ArrayList<CheckBlockInfo>();
 
     public ThreadCheckBlocks()
     {
@@ -29,14 +30,20 @@ public class ThreadCheckBlocks extends Thread
                 {
                     if(!checks.isEmpty())
                     {
-                        CheckBlockInfo info = checks.get(0);
-                        if(info.world == Minecraft.getMinecraft().theWorld)
-                        {
-                            info.doCheck();
-                        }
-                        checks.remove(0);
+                        checksList.addAll(checks);
+                        checks.clear();
                     }
                 }
+                if(!checksList.isEmpty())
+                {
+                    CheckBlockInfo info = checksList.get(0);
+                    if(info.world == Minecraft.getMinecraft().theWorld)
+                    {
+                        info.doCheck();
+                    }
+                    checksList.remove(0);
+                }
+
                 Thread.sleep(50L);
             }
         }

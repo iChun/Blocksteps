@@ -7,7 +7,6 @@ import me.ichun.mods.blocksteps.common.gui.window.element.ElementWaypointList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.StatCollector;
 import us.ichun.mods.ichunutil.client.gui.Theme;
 import us.ichun.mods.ichunutil.client.gui.window.Window;
 import us.ichun.mods.ichunutil.client.gui.window.element.Element;
