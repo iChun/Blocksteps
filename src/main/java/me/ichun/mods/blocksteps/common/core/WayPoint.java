@@ -145,6 +145,9 @@ public class Waypoint
                     double x = this.pos.getX() - d;
                     double y = this.pos.getY() - (l / 2D) - d1;
                     double z = this.pos.getZ() - d2;
+                    int jj = 15728880 % 65536;
+                    int kk = 15728880 / 65536;
+                    OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float)jj / 1.0F, (float)kk / 1.0F);
                     Minecraft.getMinecraft().getTextureManager().bindTexture(ResourceHelper.texBeaconBeam);
                     GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, 10497.0F);
                     GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, 10497.0F);

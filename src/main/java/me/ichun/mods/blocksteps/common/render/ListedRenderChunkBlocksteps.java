@@ -98,7 +98,7 @@ public class ListedRenderChunkBlocksteps extends ListedRenderChunk
 
     public void renderBlock(BlockPos.MutableBlockPos mutableblockpos, IBlockState iblockstate, Block block, VisGraph visgraph, RegionRenderCache regionrendercache, ChunkCompileTaskGenerator generator, CompiledChunk compiledchunk, BlockPos blockpos, Minecraft mc)
     {
-        boolean hasBlock = ChunkStore.contains(mutableblockpos);
+        boolean hasBlock = ChunkStore.contains(mutableblockpos) || Blocksteps.config.mapType == 3;
 
         if (block.isOpaqueCube())
         {

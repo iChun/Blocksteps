@@ -245,7 +245,7 @@ public class RenderGlobalProxy extends RenderGlobal
                     double dx = mc.thePlayer.posX - (wp.pos.getX() + 0.5D);
                     double dz = mc.thePlayer.posZ - (wp.pos.getZ() + 0.5D);
                     double dist = Math.sqrt(dx * dx + dz * dz);
-                    if(dist < wp.renderRange * 10D)
+                    if(wp.renderRange == 0 || dist < wp.renderRange * 10D)
                     {
                         wp.render(renderManager.renderPosX, renderManager.renderPosY, renderManager.renderPosZ, partialTicks, false);
                     }

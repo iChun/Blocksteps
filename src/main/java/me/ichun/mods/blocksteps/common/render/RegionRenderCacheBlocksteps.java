@@ -1,7 +1,9 @@
 package me.ichun.mods.blocksteps.common.render;
 
+import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.core.ChunkStore;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RegionRenderCache;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
@@ -17,7 +19,7 @@ public class RegionRenderCacheBlocksteps extends RegionRenderCache
     @Override
     public IBlockState getBlockState(BlockPos pos)
     {
-        if(!ChunkStore.contains(pos))
+        if(Blocksteps.config.mapType != 3 && !ChunkStore.contains(pos))
         {
             return Blocks.air.getDefaultState();
         }

@@ -194,18 +194,23 @@ public class EventHandler
                     }
                     RendererHelper.endGlScissor();
 
-                    if(Blocksteps.config.mapShowCoordinates == 1 || mc.gameSettings.showDebugInfo || mapTypeTimeout > 0)
+                    if(Blocksteps.config.mapShowCoordinates == 1 || mc.gameSettings.showDebugInfo || mapTypeTimeout > 0 || waypointTimeout > 0)
                     {
                         GlStateManager.depthMask(false);
                         GlStateManager.disableDepth();
-                        if(Blocksteps.config.mapShowCoordinates == 1 || mapTypeTimeout > 0)
+                        if(Blocksteps.config.mapShowCoordinates == 1 || mapTypeTimeout > 0 || waypointTimeout > 0)
                         {
                             GlStateManager.pushMatrix();
                             float scale = 0.5F;
                             GlStateManager.scale(scale, scale, scale);
+                            int count = 0;
                             if(mapTypeTimeout > 0)
                             {
-                                mc.fontRendererObj.drawString(StatCollector.translateToLocal("blocksteps.mapType.type") + StatCollector.translateToLocal(Blocksteps.config.mapType == 1 ? "blocksteps.mapType.blocksteps" : Blocksteps.config.mapType == 2 ? "blocksteps.mapType.surface" : "blocksteps.mapType.threedee"), (int)((x + 2) / scale), (int)((y + 2) / scale), 0xffffff);
+                                mc.fontRendererObj.drawString(StatCollector.translateToLocal("blocksteps.mapType.type") + StatCollector.translateToLocal(Blocksteps.config.mapType == 1 ? "blocksteps.mapType.blocksteps" : Blocksteps.config.mapType == 2 ? "blocksteps.mapType.surface" : "blocksteps.mapType.threedee"), (int)((x + 2) / scale), (int)((y + 2 + (7 * count++)) / scale), 0xffffff);
+                            }
+                            if(waypointTimeout > 0)
+                            {
+                                mc.fontRendererObj.drawString(StatCollector.translateToLocal(hideWaypoints ? "blocksteps.waypoint.hide" : "blocksteps.waypoint.show"), (int)((x + 2) / scale), (int)((y + 2 + (7 * count++)) / scale), 0xffffff);
                             }
                             if(Blocksteps.config.mapShowCoordinates == 1)
                             {
@@ -633,6 +638,7 @@ public class EventHandler
             }
             fullscreenTimeout--;
             mapTypeTimeout--;
+            waypointTimeout--;
         }
     }
 
@@ -818,6 +824,7 @@ public class EventHandler
                     else
                     {
                         hideWaypoints = !hideWaypoints;
+                        waypointTimeout = 100;
                     }
                 }
                 else if(event.keyBind.equals(Blocksteps.config.keyToggleFullscreen))
@@ -888,7 +895,7 @@ public class EventHandler
                 double dx = mc.thePlayer.posX - (wp.pos.getX() + 0.5D);
                 double dz = mc.thePlayer.posZ - (wp.pos.getZ() + 0.5D);
                 double dist = Math.sqrt(dx * dx + dz * dz);
-                if(dist < wp.renderRange)
+                if(wp.renderRange == 0 || dist < wp.renderRange)
                 {
                     wp.render(renderManager.renderPosX, renderManager.renderPosY, renderManager.renderPosZ, event.renderTick, true);
                 }
@@ -966,6 +973,7 @@ public class EventHandler
     public double purgeY;
     public double purgeZ;
 
+    public int waypointTimeout;
     public int mapTypeTimeout;
     public double surfaceX;
     public double surfaceY;
