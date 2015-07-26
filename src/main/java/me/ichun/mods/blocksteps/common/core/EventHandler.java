@@ -33,6 +33,7 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumWorldBlockLayer;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.StatCollector;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -193,16 +194,23 @@ public class EventHandler
                     }
                     RendererHelper.endGlScissor();
 
-                    if(Blocksteps.config.mapShowCoordinates == 1 || mc.gameSettings.showDebugInfo)
+                    if(Blocksteps.config.mapShowCoordinates == 1 || mc.gameSettings.showDebugInfo || mapTypeTimeout > 0)
                     {
                         GlStateManager.depthMask(false);
                         GlStateManager.disableDepth();
-                        if(Blocksteps.config.mapShowCoordinates == 1)
+                        if(Blocksteps.config.mapShowCoordinates == 1 || mapTypeTimeout > 0)
                         {
                             GlStateManager.pushMatrix();
                             float scale = 0.5F;
                             GlStateManager.scale(scale, scale, scale);
-                            mc.fontRendererObj.drawString("X:" + String.format(Locale.ENGLISH, "%.2f", mc.thePlayer.posX) + " Y:" + String.format(Locale.ENGLISH, "%.2f", mc.thePlayer.posY) + " Z:" + String.format(Locale.ENGLISH, "%.2f", mc.thePlayer.posZ), (int)((x + 2) / scale), (int)((y + height - 1) / scale) - mc.fontRendererObj.FONT_HEIGHT, 0xffffff);
+                            if(mapTypeTimeout > 0)
+                            {
+                                mc.fontRendererObj.drawString(StatCollector.translateToLocal("blocksteps.mapType.type") + StatCollector.translateToLocal(Blocksteps.config.mapType == 1 ? "blocksteps.mapType.blocksteps" : Blocksteps.config.mapType == 2 ? "blocksteps.mapType.surface" : "blocksteps.mapType.threedee"), (int)((x + 2) / scale), (int)((y + 2) / scale), 0xffffff);
+                            }
+                            if(Blocksteps.config.mapShowCoordinates == 1)
+                            {
+                                mc.fontRendererObj.drawString("X:" + String.format(Locale.ENGLISH, "%.2f", mc.thePlayer.posX) + " Y:" + String.format(Locale.ENGLISH, "%.2f", mc.thePlayer.posY) + " Z:" + String.format(Locale.ENGLISH, "%.2f", mc.thePlayer.posZ), (int)((x + 2) / scale), (int)((y + height - 1) / scale) - mc.fontRendererObj.FONT_HEIGHT, 0xffffff);
+                            }
                             GlStateManager.popMatrix();
                         }
                         if(mc.gameSettings.showDebugInfo)
@@ -623,7 +631,8 @@ public class EventHandler
                     rendersThisSecond = 0;
                 }
             }
-            if(fullscreenTimeout-- > 0);
+            fullscreenTimeout--;
+            mapTypeTimeout--;
         }
     }
 
@@ -693,6 +702,7 @@ public class EventHandler
             if(OpenGlHelper.isFramebufferEnabled())
             {
                 framebuffer = RendererHelper.createFrameBuffer(Blocksteps.MODNAME, true);
+                framebuffer.enableStencil();
             }
 
             arrowCompass.prevRotationYaw = arrowCompass.rotationYaw = 180F;
@@ -824,10 +834,19 @@ public class EventHandler
                     if(!GuiScreen.isShiftKeyDown())
                     {
                         Blocksteps.config.mapType++;
+                        if(Blocksteps.config.mapType == 2)
+                        {
+                            synchronized(threadCrawlBlocks.surface)
+                            {
+                                threadCrawlBlocks.surface.clear();
+                            }
+                            threadCrawlBlocks.needChecks = true;
+                        }
                         if(Blocksteps.config.mapType > 3)
                         {
                             Blocksteps.config.mapType = 1;
                         }
+                        mapTypeTimeout = 100;
                         Blocksteps.config.save();
                         if(renderGlobalProxy != null)
                         {
@@ -947,6 +966,7 @@ public class EventHandler
     public double purgeY;
     public double purgeZ;
 
+    public int mapTypeTimeout;
     public double surfaceX;
     public double surfaceY;
     public double surfaceZ;

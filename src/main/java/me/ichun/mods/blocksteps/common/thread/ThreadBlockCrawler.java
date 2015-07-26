@@ -14,6 +14,7 @@ public class ThreadBlockCrawler extends Thread
 {
     public final Map<ChunkCoordIntPair, HashSet<BlockPos>> crawler = new HashMap<ChunkCoordIntPair, HashSet<BlockPos>>();
     public final Map<ChunkCoordIntPair, HashSet<BlockPos>> surface = Collections.synchronizedMap(new HashMap<ChunkCoordIntPair, HashSet<BlockPos>>());
+    public final ArrayList<BlockPos> updatePoses = new ArrayList<BlockPos>();
     public boolean needChecks = false;
 
     public ThreadBlockCrawler()
@@ -35,6 +36,8 @@ public class ThreadBlockCrawler extends Thread
                     Minecraft mc = Minecraft.getMinecraft();
                     if(mc.thePlayer != null && mc.theWorld.provider.getDimensionId() != -1)
                     {
+                        updatePoses.clear();
+
                         BlockPos ref = new BlockPos(mc.thePlayer.posX, 0, mc.thePlayer.posZ);
                         int rangeHori = Math.max((Blocksteps.config.renderDistance == 0 ? (mc.gameSettings.renderDistanceChunks) : (Blocksteps.config.renderDistance)), 1) * 16;
 
@@ -81,7 +84,7 @@ public class ThreadBlockCrawler extends Thread
                                         }
                                     }
                                     finds++;
-                                    Blocksteps.eventHandler.renderGlobalProxy.markBlockForUpdate(pos);
+                                    updatePoses.add(pos);
                                 }
                             }
                         }
@@ -103,6 +106,11 @@ public class ThreadBlockCrawler extends Thread
 
                             surface.putAll(crawler);
                             crawler.clear();
+                        }
+
+                        for(BlockPos pos : updatePoses)
+                        {
+                            Blocksteps.eventHandler.renderGlobalProxy.markBlockForUpdate(pos);
                         }
                     }
                     needChecks = false;
