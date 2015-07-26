@@ -27,6 +27,10 @@ public class Config extends ConfigBase
     public int renderSky = 1;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 1, max = 1000)
+    public int renderSkySize = 50;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntBool
     public int renderCompass = 0;
 

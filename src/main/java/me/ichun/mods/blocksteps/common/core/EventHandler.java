@@ -428,7 +428,7 @@ public class EventHandler
 
             if(Blocksteps.config.renderSky == 1)
             {
-                float aScale = 0.5F;
+                float aScale = Blocksteps.config.renderSkySize / 100F;
                 GlStateManager.disableCull();
                 GlStateManager.pushMatrix();
                 GlStateManager.scale(aScale, aScale, aScale);
