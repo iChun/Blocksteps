@@ -145,8 +145,8 @@ public class BlockStepHandler
                 IBlockState state = world.getBlockState(periph);
                 if(isBlockTypePeripheral(world, periph, state.getBlock(), state, renderPos))
                 {
-//                    if(getBlockPeripheralHandler(state.getBlock()).requireThread() && Blocksteps.eventHandler.threadCheckBlocks != null && useThread)
-                    if(useThread)
+                    if(getBlockPeripheralHandler(state.getBlock()).requireThread() && Blocksteps.eventHandler.threadCheckBlocks != null && useThread)
+//                    if(useThread)
                     {
                         synchronized(Blocksteps.eventHandler.threadCheckBlocks.checks)
                         {

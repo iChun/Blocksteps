@@ -42,9 +42,12 @@ public class ThreadCheckBlocks extends Thread
                         info.doCheck();
                     }
                     checksList.remove(0);
+                    Thread.sleep(2L);
                 }
-
-                Thread.sleep(50L);
+                else
+                {
+                    Thread.sleep(50L);
+                }
             }
         }
         catch(Exception e)

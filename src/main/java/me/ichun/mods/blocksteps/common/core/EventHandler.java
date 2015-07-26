@@ -17,14 +17,12 @@ import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderPig;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.passive.EntityPig;
@@ -50,6 +48,7 @@ import us.ichun.mods.ichunutil.common.core.event.RenderAtPlayerEvent;
 import us.ichun.mods.ichunutil.common.core.event.RendererSafeCompatibilityEvent;
 import us.ichun.mods.ichunutil.common.core.util.IOUtil;
 import us.ichun.mods.ichunutil.common.core.util.ResourceHelper;
+import us.ichun.mods.ichunutil.common.iChunUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -142,14 +141,56 @@ public class EventHandler
                             RendererHelper.drawColourOnScreen(Blocksteps.config.mapBorderColour.getColour(), borderOpacity, x, y + height, width, size, 0D);
                         }
                     }
-
                     GlStateManager.enableDepth();
                     GlStateManager.depthMask(true);
 
                     RendererHelper.startGlScissor(x, y, width, height);
-                    renderingMinimap = true;
-                    drawMap(mc, reso, x, y, width, height, aScale, event.renderTickTime);
-                    renderingMinimap = false;
+                    if(framebuffer == null || Blocksteps.config.mapFreq == 0)
+                    {
+                        renderingMinimap = true;
+                        drawMap(mc, reso, x, y, width, height, aScale, event.renderTickTime);
+                        renderingMinimap = false;
+                    }
+                    else
+                    {
+                        GlStateManager.enableTexture2D();
+                        GlStateManager.disableLighting();
+                        GlStateManager.disableAlpha();
+                        GlStateManager.disableBlend();
+                        GlStateManager.enableColorMaterial();
+
+                        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+
+                        framebuffer.bindFramebufferTexture();
+                        double zLevel = 900D;
+                        Tessellator tessellator = Tessellator.getInstance();
+                        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+                        worldrenderer.startDrawingQuads();
+                        worldrenderer.addVertexWithUV(0, reso.getScaledHeight_double(), zLevel, 0.0D, 0.0D);
+                        worldrenderer.addVertexWithUV(reso.getScaledWidth_double(), reso.getScaledHeight_double(), zLevel, 1.0D, 0.0D);
+                        worldrenderer.addVertexWithUV(reso.getScaledWidth_double(), 0, zLevel, 1.0D, 1.0D);
+                        worldrenderer.addVertexWithUV(0, 0, zLevel, 0.0D, 1.0D);
+                        tessellator.draw();
+                        framebuffer.unbindFramebufferTexture();
+
+                        GlStateManager.enableAlpha();
+
+                        if((float)rendersThisSecond / (float)Blocksteps.config.mapFreq < ((float)(iChunUtil.proxy.tickHandlerClient.ticks - clock) + event.renderTickTime) / 20F)
+                        {
+                            lastRenderTick = event.renderTickTime;
+                            rendersThisSecond++;
+
+                            framebuffer.bindFramebuffer(true);
+
+                            GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+
+                            renderingMinimap = true;
+                            drawMap(mc, reso, x, y, width, height, aScale, event.renderTickTime);
+                            renderingMinimap = false;
+
+                            mc.getFramebuffer().bindFramebuffer(true);
+                        }
+                    }
                     RendererHelper.endGlScissor();
 
                     if(Blocksteps.config.mapShowCoordinates == 1 || mc.gameSettings.showDebugInfo)
@@ -575,6 +616,12 @@ public class EventHandler
                     surfaceZ = mc.getRenderViewEntity().posZ;
                     threadCrawlBlocks.needChecks = true;
                 }
+
+                if(iChunUtil.proxy.tickHandlerClient.ticks % 20L == 0)
+                {
+                    clock = iChunUtil.proxy.tickHandlerClient.ticks;
+                    rendersThisSecond = 0;
+                }
             }
             if(fullscreenTimeout-- > 0);
         }
@@ -642,6 +689,11 @@ public class EventHandler
 
             threadCrawlBlocks = new ThreadBlockCrawler();
             threadCrawlBlocks.start();
+
+            if(OpenGlHelper.isFramebufferEnabled())
+            {
+                framebuffer = RendererHelper.createFrameBuffer(Blocksteps.MODNAME, true);
+            }
 
             arrowCompass.prevRotationYaw = arrowCompass.rotationYaw = 180F;
         }
@@ -852,6 +904,7 @@ public class EventHandler
     public RenderGlobalProxy renderGlobalProxy;
     public ThreadCheckBlocks threadCheckBlocks;
     public ThreadBlockCrawler threadCrawlBlocks;
+    public Framebuffer framebuffer;
 
     public boolean renderingMinimap;
     public boolean hideWaypoints;
@@ -902,4 +955,8 @@ public class EventHandler
 
     public File saveLocation;
     public int saveTimeout;
+
+    public float lastRenderTick;
+    public int rendersThisSecond;
+    public long clock;
 }

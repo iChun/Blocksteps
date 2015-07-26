@@ -143,8 +143,12 @@ public class Config extends ConfigBase
     public int mapType = 1;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @IntMinMax(min = 0)
+    public int mapFreq = 0;
+
+    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 20, max = 500)
-    public int mapLoad = 40;
+    public int mapLoad = 20;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntBool
