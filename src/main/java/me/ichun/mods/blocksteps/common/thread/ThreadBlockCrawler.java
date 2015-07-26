@@ -8,12 +8,15 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.BlockPos;
+import net.minecraft.world.ChunkCoordIntPair;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ThreadBlockCrawler extends Thread
 {
-    public final Set<BlockPos> surface = Collections.synchronizedSet(new HashSet<BlockPos>());
+    public final Map<ChunkCoordIntPair, HashSet<BlockPos>> crawler = new HashMap<ChunkCoordIntPair, HashSet<BlockPos>>();
+    public final Map<ChunkCoordIntPair, HashSet<BlockPos>> surface = Collections.synchronizedMap(new HashMap<ChunkCoordIntPair, HashSet<BlockPos>>());
     public boolean needChecks = false;
 
     public ThreadBlockCrawler()
@@ -32,78 +35,77 @@ public class ThreadBlockCrawler extends Thread
             {
                 if(needChecks)
                 {
-                    synchronized(surface)
+                    Minecraft mc = Minecraft.getMinecraft();
+                    if(mc.thePlayer != null && mc.theWorld.provider.getDimensionId() != -1)
                     {
-                        Minecraft mc = Minecraft.getMinecraft();
-                        if(mc.thePlayer != null)
-                        {
-                            surface.clear();
-                            BlockPos ref = new BlockPos(mc.thePlayer.posX, 0, mc.thePlayer.posZ);
-                            int rangeHori = Math.max((Blocksteps.config.renderDistance == 0 ? (mc.gameSettings.renderDistanceChunks - 1) : (Blocksteps.config.renderDistance - 1)), 1) * 16;
-                            int minX = ref.getX();
-                            int minY = mc.theWorld.getActualHeight();
-                            int minZ = ref.getZ();
-                            int maxX = ref.getX();
-                            int maxY = 0;
-                            int maxZ = ref.getZ();
+                        BlockPos ref = new BlockPos(mc.thePlayer.posX, 0, mc.thePlayer.posZ);
+                        int rangeHori = Math.max((Blocksteps.config.renderDistance == 0 ? (mc.gameSettings.renderDistanceChunks) : (Blocksteps.config.renderDistance)), 1) * 16;
 
-                            for(int i = -rangeHori; i <= rangeHori; i++)
+                        HashMap<ChunkCoordIntPair, Boolean> hasInfo = new HashMap<ChunkCoordIntPair, Boolean>();
+
+                        for(int i = -rangeHori; i <= rangeHori; i++)
+                        {
+                            for(int k = -rangeHori; k <= rangeHori; k++)
                             {
-                                for(int k = -rangeHori; k <= rangeHori; k++)
+                                ChunkCoordIntPair chunk = new ChunkCoordIntPair((ref.getX() + i) >> 4, (ref.getZ() + k) >> 4);
+                                if(!hasInfo.containsKey(chunk))
                                 {
-                                    int j = mc.theWorld.getActualHeight() + 1;
-                                    int finds = 0;
-                                    while(j > 0 && finds < Blocksteps.config.surfaceDepth && mc.theWorld != null)
+                                    hasInfo.put(chunk, surface.containsKey(chunk));
+                                }
+                                if((rangeHori - Math.abs(i) > 18 && rangeHori - Math.abs(k) > 18) && hasInfo.get(chunk))
+                                {
+                                    continue;
+                                }
+
+                                int j = mc.theWorld.getActualHeight() + 1;
+                                int finds = 0;
+                                while(j > 0 && finds < Blocksteps.config.surfaceDepth && mc.theWorld != null)
+                                {
+                                    j--;
+                                    BlockPos pos = ref.add(i, j, k);
+                                    IBlockState state = mc.theWorld.getBlockState(pos);
+                                    if(BlockStepHandler.isBlockTypePeripheral(mc.theWorld, pos, state.getBlock(), state, BlockStepHandler.DUMMY_AVAILABLES))
                                     {
-                                        j--;
-                                        BlockPos pos = ref.add(i, j, k);
-                                        IBlockState state = mc.theWorld.getBlockState(pos);
-                                        if(BlockStepHandler.isBlockTypePeripheral(mc.theWorld, pos, state.getBlock(), state, BlockStepHandler.DUMMY_AVAILABLES))
-                                        {
-                                            surface.add(pos);
-                                            continue;
-                                        }
-                                        if(state.getBlock().isAir(mc.theWorld, pos) || !(state.getBlock().isNormalCube(mc.theWorld, pos) || BlockStepHandler.isAcceptableBlockType(state.getBlock()) || BlockLiquid.class.isInstance(state.getBlock())))
-                                        {
-                                            continue;
-                                        }
-                                        surface.add(pos);
-                                        if(pos.getX() < minX)
-                                        {
-                                            minX = pos.getX();
-                                        }
-                                        if(pos.getY() < minY)
-                                        {
-                                            minY = pos.getY();
-                                        }
-                                        if(pos.getZ() < minZ)
-                                        {
-                                            minZ = pos.getZ();
-                                        }
-                                        if(pos.getX() > maxX)
-                                        {
-                                            maxX = pos.getX();
-                                        }
-                                        if(pos.getY() > maxY)
-                                        {
-                                            maxY = pos.getY();
-                                        }
-                                        if(pos.getZ() > maxZ)
-                                        {
-                                            maxZ = pos.getZ();
-                                        }
-                                        if(finds == 0)
-                                        {
-                                            ArrayList<BlockPos> periphs = new ArrayList<BlockPos>();
-                                            BlockStepHandler.addPeripherals(mc.theWorld, pos, periphs, false);
-                                            surface.addAll(periphs);
-                                        }
-                                        finds++;
+                                        addPos(pos);
+                                        continue;
                                     }
+                                    if(state.getBlock().isAir(mc.theWorld, pos) || !(state.getBlock().isNormalCube(mc.theWorld, pos) || BlockStepHandler.isAcceptableBlockType(state.getBlock()) || BlockLiquid.class.isInstance(state.getBlock())))
+                                    {
+                                        continue;
+                                    }
+                                    addPos(pos);
+                                    if(finds == 0)
+                                    {
+                                        ArrayList<BlockPos> periphs = new ArrayList<BlockPos>();
+                                        BlockStepHandler.addPeripherals(mc.theWorld, pos, periphs, false);
+                                        for(BlockPos pos1 : periphs)
+                                        {
+                                            addPos(pos1);
+                                        }
+                                    }
+                                    finds++;
+                                    Blocksteps.eventHandler.renderGlobalProxy.markBlockForUpdate(pos);
+                                }
+                            }
+                        }
+
+                        synchronized(surface)
+                        {
+                            Iterator<Map.Entry<ChunkCoordIntPair, HashSet<BlockPos>>> ite = surface.entrySet().iterator();
+                            while(ite.hasNext())
+                            {
+                                Map.Entry<ChunkCoordIntPair, HashSet<BlockPos>> e = ite.next();
+                                double dx = e.getKey().chunkXPos << 4 - ref.getX();
+                                double dz = e.getKey().chunkZPos << 4 - ref.getZ();
+                                double dist = Math.sqrt(dx * dx + dz * dz);
+                                if(dist > ((Blocksteps.config.renderDistance == 0 ? (mc.gameSettings.renderDistanceChunks) : (Blocksteps.config.renderDistance)) + 4) * 16) //if the cache is >4 chunks away from the range, clear it off.
+                                {
+                                    ite.remove();
                                 }
                             }
 
-                            Blocksteps.eventHandler.renderGlobalProxy.markBlocksForUpdate(minX, minY, minZ, maxX, maxY, maxZ);
+                            surface.putAll(crawler);
+                            crawler.clear();
                         }
                     }
                     needChecks = false;
@@ -115,5 +117,17 @@ public class ThreadBlockCrawler extends Thread
         {
             e.printStackTrace();
         }
+    }
+
+    private void addPos(BlockPos pos)
+    {
+        ChunkCoordIntPair coord = new ChunkCoordIntPair(pos.getX() >> 4, pos.getZ() >> 4);
+        HashSet<BlockPos> poses = crawler.get(coord);
+        if(poses == null)
+        {
+            poses = new HashSet<BlockPos>();
+            crawler.put(coord, poses);
+        }
+        poses.add(pos);
     }
 }

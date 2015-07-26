@@ -35,6 +35,7 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumWorldBlockLayer;
 import net.minecraft.util.MathHelper;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -261,7 +262,7 @@ public class EventHandler
                 setNewWorld(null);
                 steps.clear();
                 blocksToRenderByStep.clear();
-                blocksToRender.clear();
+                ChunkStore.clear();
                 synchronized(Blocksteps.eventHandler.threadCheckBlocks.checks)
                 {
                     Blocksteps.eventHandler.threadCheckBlocks.checks.clear();
@@ -541,7 +542,7 @@ public class EventHandler
                     }
                     for(BlockPos pos : steps)
                     {
-                        blocksToRender.addAll(blocksToRenderByStep.get(pos));
+                        ChunkStore.addBlocks(blocksToRenderByStep.get(pos));
                     }
                 }
 
@@ -623,7 +624,7 @@ public class EventHandler
         {
             setNewWorld((WorldClient)event.world);
             blocksToRenderByStep.clear();
-            blocksToRender.clear();
+            ChunkStore.clear();
             synchronized(Blocksteps.eventHandler.threadCheckBlocks.checks)
             {
                 Blocksteps.eventHandler.threadCheckBlocks.checks.clear();
@@ -777,6 +778,10 @@ public class EventHandler
                             Blocksteps.config.mapType = 1;
                         }
                         Blocksteps.config.save();
+                        if(renderGlobalProxy != null)
+                        {
+                            renderGlobalProxy.markAllForUpdateFromPos(new BlockPos(mc.thePlayer));
+                        }
                     }
                     repopulateBlocksToRender = purgeRerender = true;
                 }
@@ -845,21 +850,6 @@ public class EventHandler
         return dimPoints;
     }
 
-    public HashSet<BlockPos> getBlocksToRender()
-    {
-        HashSet<BlockPos> blocksToRender = Blocksteps.eventHandler.blocksToRender;
-        if(Blocksteps.config.mapType == 2)
-        {
-//            blocksToRender = new HashSet<BlockPos>();
-//            blocksToRender.addAll(Blocksteps.eventHandler.blocksToRender);
-//            synchronized(Blocksteps.eventHandler.threadCrawlBlocks.surface)
-//            {
-//                blocksToRender.addAll(Blocksteps.eventHandler.threadCrawlBlocks.surface);
-//            }
-        }
-        return blocksToRender;
-    }
-
     public RenderGlobalProxy renderGlobalProxy;
     public ThreadCheckBlocks threadCheckBlocks;
     public ThreadBlockCrawler threadCrawlBlocks;
@@ -899,7 +889,6 @@ public class EventHandler
 
     public ArrayListMultimap<BlockPos, BlockPos> blocksToRenderByStep = ArrayListMultimap.create();
     public boolean repopulateBlocksToRender = false;
-    public HashSet<BlockPos> blocksToRender = new HashSet<BlockPos>();
     public final List<CheckBlockInfo> blocksToAdd = Collections.synchronizedList(new ArrayList<CheckBlockInfo>());
     public boolean purgeRerender;
     public double purgeX;

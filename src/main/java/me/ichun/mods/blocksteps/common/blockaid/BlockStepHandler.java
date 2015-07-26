@@ -220,6 +220,7 @@ public class BlockStepHandler
         blockPeripheralRegistry.put(BlockGrass.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockHopper.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockJukebox.class, DEFAULT_GENERIC_HANDLER);
+        blockPeripheralRegistry.put(BlockLeaves.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockMelon.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockNote.class, DEFAULT_GENERIC_HANDLER);
         blockPeripheralRegistry.put(BlockPumpkin.class, DEFAULT_GENERIC_HANDLER);

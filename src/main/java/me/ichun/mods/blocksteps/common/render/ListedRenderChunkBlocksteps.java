@@ -1,6 +1,7 @@
 package me.ichun.mods.blocksteps.common.render;
 
 import me.ichun.mods.blocksteps.common.Blocksteps;
+import me.ichun.mods.blocksteps.common.core.ChunkStore;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -17,7 +18,6 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumWorldBlockLayer;
 import net.minecraft.world.World;
 
-import java.util.HashSet;
 import java.util.Iterator;
 
 public class ListedRenderChunkBlocksteps extends ListedRenderChunk
@@ -54,7 +54,6 @@ public class ListedRenderChunkBlocksteps extends ListedRenderChunk
         VisGraph visgraph = new VisGraph();
 
         Minecraft mc = Minecraft.getMinecraft();
-        HashSet<BlockPos> blocksToRender = Blocksteps.eventHandler.getBlocksToRender();
 
         if (!regionrendercache.extendedLevelsInChunkCache())
         {
@@ -67,41 +66,16 @@ public class ListedRenderChunkBlocksteps extends ListedRenderChunk
                 IBlockState iblockstate = regionrendercache.getBlockState(mutableblockpos);
                 Block block = iblockstate.getBlock();
 
-                if (block.isOpaqueCube())
+                if(Blocksteps.config.mapType == 2)
                 {
-                    visgraph.func_178606_a(mutableblockpos);
-                }
-
-                if (blocksToRender.contains(mutableblockpos) && block.hasTileEntity(iblockstate))
-                {
-                    TileEntity tileentity = regionrendercache.getTileEntity(new BlockPos(mutableblockpos));
-
-                    if (tileentity != null && TileEntityRendererDispatcher.instance.hasSpecialRenderer(tileentity))
+                    synchronized(Blocksteps.eventHandler.threadCrawlBlocks.surface)
                     {
-                        compiledchunk.addTileEntity(tileentity);
+                        renderBlock(mutableblockpos, iblockstate, block, visgraph, regionrendercache, generator, compiledchunk, blockpos, mc);
                     }
                 }
-
-                for(EnumWorldBlockLayer enumworldblocklayer1 : EnumWorldBlockLayer.values()) {
-                    if(!block.canRenderInLayer(enumworldblocklayer1)) continue;
-                    net.minecraftforge.client.ForgeHooksClient.setRenderLayer(enumworldblocklayer1);
-                    int i = enumworldblocklayer1.ordinal();
-
-                    if (block.getRenderType() != -1)
-                    {
-                        WorldRenderer worldrenderer = generator.getRegionRenderCacheBuilder().getWorldRendererByLayerId(i);
-
-                        if (!compiledchunk.isLayerStarted(enumworldblocklayer1))
-                        {
-                            compiledchunk.setLayerStarted(enumworldblocklayer1);
-                            this.preRenderBlocks(worldrenderer, blockpos);
-                        }
-
-                        if (blocksToRender.contains(mutableblockpos) && mc.getBlockRendererDispatcher().renderBlock(iblockstate, mutableblockpos, regionrendercache, worldrenderer))
-                        {
-                            compiledchunk.setLayerUsed(enumworldblocklayer1);
-                        }
-                    }
+                else
+                {
+                    renderBlock(mutableblockpos, iblockstate, block, visgraph, regionrendercache, generator, compiledchunk, blockpos, mc);
                 }
             }
 
@@ -120,5 +94,47 @@ public class ListedRenderChunkBlocksteps extends ListedRenderChunk
         }
 
         compiledchunk.setVisibility(visgraph.computeVisibility());
+    }
+
+    public void renderBlock(BlockPos.MutableBlockPos mutableblockpos, IBlockState iblockstate, Block block, VisGraph visgraph, RegionRenderCache regionrendercache, ChunkCompileTaskGenerator generator, CompiledChunk compiledchunk, BlockPos blockpos, Minecraft mc)
+    {
+        boolean hasBlock = ChunkStore.contains(mutableblockpos);
+
+        if (block.isOpaqueCube())
+        {
+            visgraph.func_178606_a(mutableblockpos);
+        }
+
+        if (hasBlock && block.hasTileEntity(iblockstate))
+        {
+            TileEntity tileentity = regionrendercache.getTileEntity(new BlockPos(mutableblockpos));
+
+            if (tileentity != null && TileEntityRendererDispatcher.instance.hasSpecialRenderer(tileentity))
+            {
+                compiledchunk.addTileEntity(tileentity);
+            }
+        }
+
+        for(EnumWorldBlockLayer enumworldblocklayer1 : EnumWorldBlockLayer.values()) {
+            if(!block.canRenderInLayer(enumworldblocklayer1)) continue;
+            net.minecraftforge.client.ForgeHooksClient.setRenderLayer(enumworldblocklayer1);
+            int i = enumworldblocklayer1.ordinal();
+
+            if (block.getRenderType() != -1)
+            {
+                WorldRenderer worldrenderer = generator.getRegionRenderCacheBuilder().getWorldRendererByLayerId(i);
+
+                if (!compiledchunk.isLayerStarted(enumworldblocklayer1))
+                {
+                    compiledchunk.setLayerStarted(enumworldblocklayer1);
+                    this.preRenderBlocks(worldrenderer, blockpos);
+                }
+
+                if (hasBlock && mc.getBlockRendererDispatcher().renderBlock(iblockstate, mutableblockpos, regionrendercache, worldrenderer))
+                {
+                    compiledchunk.setLayerUsed(enumworldblocklayer1);
+                }
+            }
+        }
     }
 }

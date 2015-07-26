@@ -1,6 +1,7 @@
 package me.ichun.mods.blocksteps.common.render;
 
 import me.ichun.mods.blocksteps.common.Blocksteps;
+import me.ichun.mods.blocksteps.common.core.ChunkStore;
 import me.ichun.mods.blocksteps.common.core.Waypoint;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -17,15 +18,13 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 @SideOnly(Side.CLIENT)
 public class RenderGlobalProxy extends RenderGlobal
@@ -183,7 +182,9 @@ public class RenderGlobalProxy extends RenderGlobal
             }
 
             RenderManager rendermanager = Minecraft.getMinecraft().getRenderManager();
+            float viewX = rendermanager.playerViewX;
             float viewY = rendermanager.playerViewY;
+            rendermanager.playerViewX = Blocksteps.eventHandler.angleX;
             rendermanager.setPlayerViewY(Blocksteps.eventHandler.angleY + 180F);
 
             int i;
@@ -250,6 +251,7 @@ public class RenderGlobalProxy extends RenderGlobal
                 }
             }
 
+            rendermanager.playerViewX = viewX;
             rendermanager.setPlayerViewY(viewY);
 
             this.theWorld.theProfiler.endStartSection("blockentities");
@@ -320,9 +322,15 @@ public class RenderGlobalProxy extends RenderGlobal
             return true;
         }
 
-        HashSet<BlockPos> blocksToRender = Blocksteps.eventHandler.getBlocksToRender();
+        return Blocksteps.config.mapShowEntities == 1 && (ChunkStore.contains(pos) || ChunkStore.contains(pos.add(0, -1, 0)) || ChunkStore.contains(pos.add(0, -2, 0)));
+    }
 
-        return Blocksteps.config.mapShowEntities == 1 && (blocksToRender.contains(pos) || blocksToRender.contains(pos.add(0, -1, 0)) || blocksToRender.contains(pos.add(0, -2, 0)));
+    public void markAllForUpdateFromPos(BlockPos ref)
+    {
+        int rangeHori = Math.max((Blocksteps.config.renderDistance == 0 ? (mc.gameSettings.renderDistanceChunks) : (Blocksteps.config.renderDistance)), 1) * 16;
+        BlockPos min = ref.add(-rangeHori, 0, -rangeHori);
+        BlockPos max = ref.add(rangeHori, 0, rangeHori);
+        markBlocksForUpdate(min.getX(), 0, min.getZ(), max.getX(), theWorld.getActualHeight(), max.getZ());
     }
 
     /**
