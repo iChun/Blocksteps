@@ -206,7 +206,7 @@ public class EventHandler
                             int count = 0;
                             if(mapTypeTimeout > 0)
                             {
-                                mc.fontRendererObj.drawString(StatCollector.translateToLocal("blocksteps.mapType.type") + StatCollector.translateToLocal(Blocksteps.config.mapType == 1 ? "blocksteps.mapType.blocksteps" : Blocksteps.config.mapType == 2 ? "blocksteps.mapType.surface" : "blocksteps.mapType.threedee"), (int)((x + 2) / scale), (int)((y + 2 + (7 * count++)) / scale), 0xffffff);
+                                mc.fontRendererObj.drawString(StatCollector.translateToLocal("blocksteps.mapType.type") + StatCollector.translateToLocal(Blocksteps.config.mapType == 1 ? "blocksteps.mapType.blocksteps" : Blocksteps.config.mapType == 2 ? "blocksteps.mapType.surface" : Blocksteps.config.mapType == 3 ? "blocksteps.mapType.threedee" : "blocksteps.mapType.cylindricalSlice"), (int)((x + 2) / scale), (int)((y + 2 + (7 * count++)) / scale), 0xffffff);
                             }
                             if(waypointTimeout > 0)
                             {
@@ -849,7 +849,7 @@ public class EventHandler
                             }
                             threadCrawlBlocks.needChecks = true;
                         }
-                        if(Blocksteps.config.mapType > 3)
+                        if(Blocksteps.config.mapType > 4)
                         {
                             Blocksteps.config.mapType = 1;
                         }

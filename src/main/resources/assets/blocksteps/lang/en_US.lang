@@ -1,5 +1,5 @@
-blocksteps.config.prop.renderBlockCount.name=Maximum blocks to count per server.
-blocksteps.config.prop.renderDistance.name=Maximum chunks for rendering.
+blocksteps.config.prop.renderBlockCount.name=Maximum blocks to count per server
+blocksteps.config.prop.renderDistance.name=Maximum chunks for rendering
 blocksteps.config.prop.renderSky.name=Render Sky
 blocksteps.config.prop.renderCompass.name=Render Arrow Compass
 blocksteps.config.prop.saveInterval.name=Save Interval
@@ -92,7 +92,7 @@ blocksteps.config.prop.camPosX.comment=Position of the camera horizontally (in p
 blocksteps.config.prop.camPosY.comment=Position of the camera vertically (in percentage) on the map.
 blocksteps.config.prop.surfaceDepth.comment=How deep the surface search should be.
 blocksteps.config.prop.surfaceHorizontalUpdateDistance.comment=How far the player must travel (in blocks) horizontally before the map tries to update the surface blocks again.
-blocksteps.config.prop.mapType.comment=Current Map Type\n1 = Blocksteps, where only blocks you stepped on are visible. This type actually saves. \n   Blocksteps may be somewhat unoptimized, the community voted that I finished the mod and you are reading the configs of the completed contents.\n   I have however, tried to optimize it as much as I can. I would recommend staying on this mode.\n2 = Blocksteps + Surface, blocksteps mode and a mode called Surface, which, well, renders just the surface.\n   Surface is made more for photographic use rather than active use.\n   Surface may also have issues rendering on the surface and be unoptimized.\n3 = Full Overview, you get a general 3D map of the area.
+blocksteps.config.prop.mapType.comment=Current Map Type\n1 = Blocksteps, where only blocks you stepped on are visible. This type actually saves. \n   Blocksteps may be somewhat unoptimized, the community voted that I finished the mod and you are reading the configs of the completed contents.\n   I have however, tried to optimize it as much as I can. I would recommend staying on this mode.\n2 = Blocksteps + Surface, blocksteps mode and a mode called Surface, which, well, renders just the surface.\n   Surface is made more for photographic use rather than active use.\n   Surface may also have issues rendering on the surface and be unoptimized.\n3 = Full Overview, you get a general 3D map of the area.\n4 = Cylindrical Slice, purely for pretty pictures and stuff.
 blocksteps.config.prop.mapFreq.comment=Map refresh rate a second. Caps to the rendering speed of Minecraft.\nOnly supported if you have framebuffers enabled.\nHowever, turning this on (setting it higher than 0) will disable the translucent mini map background.\nIt will be replaced with the colour of the horizon.\nSet to 0 to bind to Minecraft render refresh rate.
 blocksteps.config.prop.mapLoad.comment=Time to allow the actual world map to load before grabbing the world data for the mini-map render (in ticks).
 blocksteps.config.prop.mapShowEntities.comment=Show Entities on the map?\nFor Blocksteps map type, only entities on shown blocks will render.
@@ -138,6 +138,7 @@ blocksteps.mapType.type=Map Type:
 blocksteps.mapType.blocksteps=Blocksteps
 blocksteps.mapType.surface=Blocksteps + Surface
 blocksteps.mapType.threedee=Full Overview
+blocksteps.mapType.cylindricalSlice=Cylindrical Slice
 
 blocksteps.waypoint.show=Showing waypoints
 blocksteps.waypoint.hide=Hiding waypoints

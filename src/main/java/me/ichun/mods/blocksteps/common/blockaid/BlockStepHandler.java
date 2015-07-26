@@ -1,7 +1,7 @@
 package me.ichun.mods.blocksteps.common.blockaid;
 
 import me.ichun.mods.blocksteps.common.Blocksteps;
-import me.ichun.mods.blocksteps.common.blockaid.handler.BlockPeripheralHandler;
+import me.ichun.mods.blocksteps.api.BlockPeripheralHandler;
 import me.ichun.mods.blocksteps.common.blockaid.handler.periphs.*;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;

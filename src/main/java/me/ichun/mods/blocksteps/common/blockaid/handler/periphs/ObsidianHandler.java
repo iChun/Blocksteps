@@ -1,9 +1,7 @@
 package me.ichun.mods.blocksteps.common.blockaid.handler.periphs;
 
 import me.ichun.mods.blocksteps.common.Blocksteps;
-import me.ichun.mods.blocksteps.common.blockaid.handler.BlockPeripheralHandler;
-import net.minecraft.block.BlockEndPortal;
-import net.minecraft.block.BlockEndPortalFrame;
+import me.ichun.mods.blocksteps.api.BlockPeripheralHandler;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;

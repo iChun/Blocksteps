@@ -19,7 +19,19 @@ public class RegionRenderCacheBlocksteps extends RegionRenderCache
     @Override
     public IBlockState getBlockState(BlockPos pos)
     {
-        if(Blocksteps.config.mapType != 3 && !ChunkStore.contains(pos))
+        if(Blocksteps.config.mapType == 4)
+        {
+            Minecraft mc = Minecraft.getMinecraft();
+            int rangeHori = (Blocksteps.config.renderDistance == 0 ? (mc.gameSettings.renderDistanceChunks - 1) : (Blocksteps.config.renderDistance - 1)) * 16;
+            double dx = pos.getX() - mc.thePlayer.posX;
+            double dz = pos.getZ() - mc.thePlayer.posZ;
+            double dist = Math.sqrt(dx * dx + dz * dz);
+            if(dist > rangeHori)
+            {
+                return Blocks.air.getDefaultState();
+            }
+        }
+        else if(Blocksteps.config.mapType != 3 && !ChunkStore.contains(pos))
         {
             return Blocks.air.getDefaultState();
         }

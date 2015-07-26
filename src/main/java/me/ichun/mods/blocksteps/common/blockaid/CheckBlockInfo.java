@@ -1,7 +1,7 @@
 package me.ichun.mods.blocksteps.common.blockaid;
 
 import me.ichun.mods.blocksteps.common.Blocksteps;
-import me.ichun.mods.blocksteps.common.blockaid.handler.BlockPeripheralHandler;
+import me.ichun.mods.blocksteps.api.BlockPeripheralHandler;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;

@@ -84,7 +84,7 @@ public class Config extends ConfigBase
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntBool
-    public int waypointLabelThroughBlocks = 0;
+    public int waypointLabelThroughBlocks = 1;
 
     @ConfigProp(category = "clientOnly", side = Side.CLIENT)
     @IntMinMax(min = 0)
@@ -203,46 +203,46 @@ public class Config extends ConfigBase
     @IntBool
     public int easterEgg = 1;
 
-    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @ConfigProp
     public KeyBind keyCamUp = new KeyBind(Keyboard.KEY_NUMPAD8, false, false, false, false);
 
-    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @ConfigProp
     public KeyBind keyCamDown = new KeyBind(Keyboard.KEY_NUMPAD2, false, false, false, false);
 
-    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @ConfigProp
     public KeyBind keyCamLeft = new KeyBind(Keyboard.KEY_NUMPAD4, false, false, false, false);
 
-    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @ConfigProp
     public KeyBind keyCamRight = new KeyBind(Keyboard.KEY_NUMPAD6, false, false, false, false);
 
-    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @ConfigProp
     public KeyBind keyCamUpFS = new KeyBind(Keyboard.KEY_UP, false, false, false, false);
 
-    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @ConfigProp
     public KeyBind keyCamDownFS = new KeyBind(Keyboard.KEY_DOWN, false, false, false, false);
 
-    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @ConfigProp
     public KeyBind keyCamLeftFS = new KeyBind(Keyboard.KEY_LEFT, false, false, false, false);
 
-    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @ConfigProp
     public KeyBind keyCamRightFS = new KeyBind(Keyboard.KEY_RIGHT, false, false, false, false);
 
-    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @ConfigProp
     public KeyBind keyCamZoomIn = new KeyBind(Keyboard.KEY_NUMPAD9, false, false, false, false);
 
-    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @ConfigProp
     public KeyBind keyCamZoomOut = new KeyBind(Keyboard.KEY_NUMPAD3, false, false, false, false);
 
-    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @ConfigProp
     public KeyBind keyToggle = new KeyBind(Keyboard.KEY_NUMPAD5, false, false, false, false);
 
-    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @ConfigProp
     public KeyBind keyToggleFullscreen = new KeyBind(Keyboard.KEY_NUMPAD7, false, false, false, false);
 
-    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @ConfigProp
     public KeyBind keySwitchMapMode = new KeyBind(Keyboard.KEY_NUMPAD1, false, false, false, false);
 
-    @ConfigProp(category = "clientOnly", side = Side.CLIENT)
+    @ConfigProp
     public KeyBind keyWaypoints = new KeyBind(Keyboard.KEY_NUMPAD0, false, false, false, false);
 
     public Config(File file)
