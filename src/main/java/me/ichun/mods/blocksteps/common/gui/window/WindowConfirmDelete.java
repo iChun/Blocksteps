@@ -1,9 +1,12 @@
 package me.ichun.mods.blocksteps.common.gui.window;
 
 import me.ichun.mods.blocksteps.common.Blocksteps;
+import me.ichun.mods.blocksteps.common.core.ChunkStore;
 import me.ichun.mods.blocksteps.common.core.Waypoint;
 import me.ichun.mods.blocksteps.common.gui.GuiWaypoints;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.StatCollector;
 import us.ichun.mods.ichunutil.client.gui.Theme;
 import us.ichun.mods.ichunutil.client.gui.window.IWorkspace;
@@ -51,8 +54,13 @@ public class WindowConfirmDelete extends Window
 
             if(waypoint == null)
             {
-                Blocksteps.eventHandler.getWaypoints(Minecraft.getMinecraft().theWorld.provider.getDimensionId()).clear();
+                if(!GuiScreen.isShiftKeyDown())
+                {
+                    Blocksteps.eventHandler.getWaypoints(Minecraft.getMinecraft().theWorld.provider.getDimensionId()).clear();
+                }
                 Blocksteps.eventHandler.getSteps(Minecraft.getMinecraft().theWorld.provider.getDimensionId()).clear();
+                ChunkStore.clear();
+                Blocksteps.eventHandler.renderGlobalProxy.markAllForUpdateFromPos(new BlockPos(Minecraft.getMinecraft().thePlayer));
                 Blocksteps.eventHandler.repopulateBlocksToRender = Blocksteps.eventHandler.purgeRerender = true;
             }
             else

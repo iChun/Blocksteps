@@ -128,7 +128,7 @@ blocksteps.config.prop.keyWaypoints.comment=Key to show the waypoints menu.
 
 blocksteps.gui.newWaypoint=New Waypoint
 blocksteps.gui.deleteWaypoint=Delete Waypoint
-blocksteps.gui.deleteMap=Delete Map Storage
+blocksteps.gui.deleteMap=Delete Map Storage\nHold shift when confirming to delete just map step data.
 
 blocksteps.gui.waypoints=Waypoints
 blocksteps.gui.editWaypoint=Edit Waypoint
