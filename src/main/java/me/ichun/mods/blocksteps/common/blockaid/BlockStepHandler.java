@@ -41,7 +41,7 @@ public class BlockStepHandler
         if(!steps.isEmpty())
         {
             BlockPos lastPos = steps.get(steps.size() - 1);
-            if(lastPos.equals(pos))
+            if((entity != Minecraft.getMinecraft().thePlayer && entity != Minecraft.getMinecraft().thePlayer.ridingEntity) && steps.contains(pos) || lastPos.equals(pos))
             {
                 add = false;
             }
@@ -65,7 +65,14 @@ public class BlockStepHandler
             {
                 steps.remove(pos);
             }
-            steps.add(pos);
+            if(!steps.isEmpty() && (entity != Minecraft.getMinecraft().thePlayer && entity != Minecraft.getMinecraft().thePlayer.ridingEntity))
+            {
+                steps.add(steps.size() - 1, pos); //add it before the latest one so that the latest is always the player's.
+            }
+            else
+            {
+                steps.add(pos);
+            }
             BlockStepHandler.getBlocksToRender(true, pos);
         }
     }

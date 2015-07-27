@@ -318,9 +318,17 @@ public class RenderGlobalProxy extends RenderGlobal
 
         Minecraft mc = Minecraft.getMinecraft();
 
-        if(entity == mc.getRenderViewEntity() || entity instanceof EntityPlayer && Blocksteps.config.trackOtherPlayers == 1 || mc.getRenderViewEntity() != null && ((entity == mc.getRenderViewEntity().riddenByEntity || entity == mc.getRenderViewEntity().ridingEntity) || mc.getRenderViewEntity().ridingEntity != null && entity == mc.getRenderViewEntity().ridingEntity.ridingEntity))
+        if(Blocksteps.config.mapType == 3 || entity == mc.getRenderViewEntity() || entity instanceof EntityPlayer && Blocksteps.config.trackOtherPlayers == 1 || mc.getRenderViewEntity() != null && ((entity == mc.getRenderViewEntity().riddenByEntity || entity == mc.getRenderViewEntity().ridingEntity) || mc.getRenderViewEntity().ridingEntity != null && entity == mc.getRenderViewEntity().ridingEntity.ridingEntity))
         {
             return true;
+        }
+        else if(Blocksteps.config.mapType == 4)
+        {
+            int rangeHori = (Blocksteps.config.renderDistance == 0 ? (mc.gameSettings.renderDistanceChunks - 1) : (Blocksteps.config.renderDistance - 1)) * 16;
+            double dx = pos.getX() - mc.thePlayer.posX;
+            double dz = pos.getZ() - mc.thePlayer.posZ;
+            double dist = Math.sqrt(dx * dx + dz * dz);
+            return dist < rangeHori;
         }
 
         return Blocksteps.config.mapShowEntities == 1 && (ChunkStore.contains(pos) || ChunkStore.contains(pos.add(0, -1, 0)) || ChunkStore.contains(pos.add(0, -2, 0)));
