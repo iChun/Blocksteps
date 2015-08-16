@@ -208,46 +208,46 @@ public class Config extends ConfigBase
     public int easterEgg = 1;
 
     @ConfigProp
-    public KeyBind keyCamUp = new KeyBind(Keyboard.KEY_NUMPAD8, false, false, false, false);
+    public KeyBind keyCamUp = new KeyBind(Keyboard.KEY_NUMPAD8);
 
     @ConfigProp
-    public KeyBind keyCamDown = new KeyBind(Keyboard.KEY_NUMPAD2, false, false, false, false);
+    public KeyBind keyCamDown = new KeyBind(Keyboard.KEY_NUMPAD2);
 
     @ConfigProp
-    public KeyBind keyCamLeft = new KeyBind(Keyboard.KEY_NUMPAD4, false, false, false, false);
+    public KeyBind keyCamLeft = new KeyBind(Keyboard.KEY_NUMPAD4);
 
     @ConfigProp
-    public KeyBind keyCamRight = new KeyBind(Keyboard.KEY_NUMPAD6, false, false, false, false);
+    public KeyBind keyCamRight = new KeyBind(Keyboard.KEY_NUMPAD6);
 
     @ConfigProp
-    public KeyBind keyCamUpFS = new KeyBind(Keyboard.KEY_UP, false, false, false, false);
+    public KeyBind keyCamUpFS = new KeyBind(Keyboard.KEY_UP);
 
     @ConfigProp
-    public KeyBind keyCamDownFS = new KeyBind(Keyboard.KEY_DOWN, false, false, false, false);
+    public KeyBind keyCamDownFS = new KeyBind(Keyboard.KEY_DOWN);
 
     @ConfigProp
-    public KeyBind keyCamLeftFS = new KeyBind(Keyboard.KEY_LEFT, false, false, false, false);
+    public KeyBind keyCamLeftFS = new KeyBind(Keyboard.KEY_LEFT);
 
     @ConfigProp
-    public KeyBind keyCamRightFS = new KeyBind(Keyboard.KEY_RIGHT, false, false, false, false);
+    public KeyBind keyCamRightFS = new KeyBind(Keyboard.KEY_RIGHT);
 
     @ConfigProp
-    public KeyBind keyCamZoomIn = new KeyBind(Keyboard.KEY_NUMPAD9, false, false, false, false);
+    public KeyBind keyCamZoomIn = new KeyBind(Keyboard.KEY_NUMPAD9);
 
     @ConfigProp
-    public KeyBind keyCamZoomOut = new KeyBind(Keyboard.KEY_NUMPAD3, false, false, false, false);
+    public KeyBind keyCamZoomOut = new KeyBind(Keyboard.KEY_NUMPAD3);
 
     @ConfigProp
-    public KeyBind keyToggle = new KeyBind(Keyboard.KEY_NUMPAD5, false, false, false, false);
+    public KeyBind keyToggle = new KeyBind(Keyboard.KEY_NUMPAD5);
 
     @ConfigProp
-    public KeyBind keyToggleFullscreen = new KeyBind(Keyboard.KEY_NUMPAD7, false, false, false, false);
+    public KeyBind keyToggleFullscreen = new KeyBind(Keyboard.KEY_NUMPAD7);
 
     @ConfigProp
-    public KeyBind keySwitchMapMode = new KeyBind(Keyboard.KEY_NUMPAD1, false, false, false, false);
+    public KeyBind keySwitchMapMode = new KeyBind(Keyboard.KEY_NUMPAD1);
 
     @ConfigProp
-    public KeyBind keyWaypoints = new KeyBind(Keyboard.KEY_NUMPAD0, false, false, false, false);
+    public KeyBind keyWaypoints = new KeyBind(Keyboard.KEY_NUMPAD0);
 
     public Config(File file)
     {

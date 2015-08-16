@@ -254,10 +254,6 @@ public class EventHandler
                         RenderManager rendermanager = Minecraft.getMinecraft().getRenderManager();
                         rendermanager.renderEntityWithPosYaw(arrowCompass, 0.0D, 0.0D, 0.0D, 0.0F, event.renderTickTime);
                         GlStateManager.popMatrix();
-                        GlStateManager.disableRescaleNormal();
-                        GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
-                        GlStateManager.disableTexture2D();
-                        GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 
                         GlStateManager.enableLighting();
                         GlStateManager.enableDepth();
@@ -294,33 +290,6 @@ public class EventHandler
         }
         else
         {
-            if(renderGlobalProxy != null && renderGlobalProxy.theWorld != null && mc.theWorld == null)
-            {
-                if(saveLocation != null)
-                {
-                    saveLocation.getParentFile().mkdirs();
-                    try
-                    {
-                        FileOutputStream stream = new FileOutputStream(saveLocation);
-                        stream.write(IOUtil.compress((new Gson()).toJson(MapSaveFile.create())));
-                        stream.close();
-                    }
-                    catch(Exception e)
-                    {
-                        Blocksteps.logger.warn("Error saving file: " + saveLocation);
-                    }
-
-                    saveLocation = null;
-                }
-                setNewWorld(null);
-                steps.clear();
-                blocksToRenderByStep.clear();
-                ChunkStore.clear();
-                synchronized(Blocksteps.eventHandler.threadCheckBlocks.checks)
-                {
-                    Blocksteps.eventHandler.threadCheckBlocks.checks.clear();
-                }
-            }
             if(mc.theWorld != null)
             {
                 if(mc.currentScreen instanceof GuiIngameMenu && fullscreen)
@@ -388,10 +357,6 @@ public class EventHandler
 
         GlStateManager.popMatrix();
         RenderHelper.disableStandardItemLighting();
-        GlStateManager.disableRescaleNormal();
-        GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
-        GlStateManager.disableTexture2D();
-        GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
     }
 
     public void renderWorld(Minecraft mc, float partialTicks)
@@ -902,6 +867,38 @@ public class EventHandler
             }
             GlStateManager.enableFog();
             Blocksteps.eventHandler.renderingMinimap = false;
+        }
+    }
+
+    @SubscribeEvent
+    public void onClientDisconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event)
+    {
+        if(renderGlobalProxy != null && renderGlobalProxy.theWorld != null)
+        {
+            if(saveLocation != null)
+            {
+                saveLocation.getParentFile().mkdirs();
+                try
+                {
+                    FileOutputStream stream = new FileOutputStream(saveLocation);
+                    stream.write(IOUtil.compress((new Gson()).toJson(MapSaveFile.create())));
+                    stream.close();
+                }
+                catch(Exception e)
+                {
+                    Blocksteps.logger.warn("Error saving file: " + saveLocation);
+                }
+
+                saveLocation = null;
+            }
+            setNewWorld(null);
+            steps.clear();
+            blocksToRenderByStep.clear();
+            ChunkStore.clear();
+            synchronized(Blocksteps.eventHandler.threadCheckBlocks.checks)
+            {
+                Blocksteps.eventHandler.threadCheckBlocks.checks.clear();
+            }
         }
     }
 
