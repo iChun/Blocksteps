@@ -864,6 +864,7 @@ public class EventHandler
                     wp.render(renderManager.renderPosX, renderManager.renderPosY, renderManager.renderPosZ, event.partialTicks, true);
                 }
             }
+            GlStateManager.disableLighting(); //rendering the WP enables lighting. Disable it.
             Blocksteps.eventHandler.renderingMinimap = false;
         }
     }
