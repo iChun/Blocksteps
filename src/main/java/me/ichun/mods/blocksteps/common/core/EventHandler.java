@@ -34,6 +34,7 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumWorldBlockLayer;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -45,7 +46,6 @@ import org.lwjgl.opengl.GL11;
 import us.ichun.mods.ichunutil.client.keybind.KeyEvent;
 import us.ichun.mods.ichunutil.client.render.RendererHelper;
 import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
-import us.ichun.mods.ichunutil.common.core.event.RenderAtPlayerEvent;
 import us.ichun.mods.ichunutil.common.core.event.RendererSafeCompatibilityEvent;
 import us.ichun.mods.ichunutil.common.core.util.IOUtil;
 import us.ichun.mods.ichunutil.common.core.util.ResourceHelper;
@@ -846,7 +846,7 @@ public class EventHandler
     }
 
     @SubscribeEvent
-    public void onRenderAtPlayer(RenderAtPlayerEvent event)
+    public void onRenderWorldLast(RenderWorldLastEvent event)
     {
         if(Blocksteps.config.waypointRenderInWorld == 1 && !Blocksteps.eventHandler.hideWaypoints)
         {
@@ -854,7 +854,6 @@ public class EventHandler
             RenderManager renderManager = mc.getRenderManager();
             ArrayList<Waypoint> points = Blocksteps.eventHandler.getWaypoints(mc.theWorld.provider.getDimensionId());
             Blocksteps.eventHandler.renderingMinimap = true;
-            GlStateManager.disableFog();
             for(Waypoint wp : points)
             {
                 double dx = mc.thePlayer.posX - (wp.pos.getX() + 0.5D);
@@ -862,10 +861,9 @@ public class EventHandler
                 double dist = Math.sqrt(dx * dx + dz * dz);
                 if(wp.renderRange == 0 || dist < wp.renderRange)
                 {
-                    wp.render(renderManager.renderPosX, renderManager.renderPosY, renderManager.renderPosZ, event.renderTick, true);
+                    wp.render(renderManager.renderPosX, renderManager.renderPosY, renderManager.renderPosZ, event.partialTicks, true);
                 }
             }
-            GlStateManager.enableFog();
             Blocksteps.eventHandler.renderingMinimap = false;
         }
     }
