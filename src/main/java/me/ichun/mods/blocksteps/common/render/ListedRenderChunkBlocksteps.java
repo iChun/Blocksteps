@@ -14,17 +14,19 @@ import net.minecraft.client.renderer.chunk.ListedRenderChunk;
 import net.minecraft.client.renderer.chunk.VisGraph;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumWorldBlockLayer;
+import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.EnumBlockRenderType;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.world.World;
 
 import java.util.Iterator;
 
 public class ListedRenderChunkBlocksteps extends ListedRenderChunk
 {
-    public ListedRenderChunkBlocksteps(World worldIn, RenderGlobal renderGlobalIn, BlockPos pos, int indexIn)
+    public ListedRenderChunkBlocksteps(World worldIn, RenderGlobal renderGlobalIn, int indexIn)
     {
-        super(worldIn, renderGlobalIn, pos, indexIn);
+        super(worldIn, renderGlobalIn, indexIn);
     }
 
     @Override
@@ -79,12 +81,12 @@ public class ListedRenderChunkBlocksteps extends ListedRenderChunk
                 }
             }
 
-            EnumWorldBlockLayer[] aenumworldblocklayer = EnumWorldBlockLayer.values();
+            BlockRenderLayer[] aenumworldblocklayer = BlockRenderLayer.values();
             int j = aenumworldblocklayer.length;
 
             for (int k = 0; k < j; ++k)
             {
-                EnumWorldBlockLayer enumworldblocklayer = aenumworldblocklayer[k];
+                BlockRenderLayer enumworldblocklayer = aenumworldblocklayer[k];
 
                 if (compiledchunk.isLayerStarted(enumworldblocklayer))
                 {
@@ -115,12 +117,12 @@ public class ListedRenderChunkBlocksteps extends ListedRenderChunk
             }
         }
 
-        for(EnumWorldBlockLayer enumworldblocklayer1 : EnumWorldBlockLayer.values()) {
+        for(BlockRenderLayer enumworldblocklayer1 : BlockRenderLayer.values()) {
             if(!block.canRenderInLayer(enumworldblocklayer1)) continue;
             net.minecraftforge.client.ForgeHooksClient.setRenderLayer(enumworldblocklayer1);
             int i = enumworldblocklayer1.ordinal();
 
-            if (block.getRenderType() != -1)
+            if (block.getDefaultState().getRenderType() != EnumBlockRenderType.INVISIBLE)
             {
                 WorldRenderer worldrenderer = generator.getRegionRenderCacheBuilder().getWorldRendererByLayerId(i);
 

@@ -1,7 +1,6 @@
 package me.ichun.mods.blocksteps.common.entity;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
@@ -46,14 +45,4 @@ public class EntityWaypoint extends Entity
 
     @Override
     public void writeEntityToNBT(NBTTagCompound nbttagcompound) {}
-
-    @Override
-    public void setCurrentItemOrArmor(int i, ItemStack itemstack) {
-    }
-
-    @Override
-    public ItemStack[] getInventory()
-    {
-        return new ItemStack[0];
-    }
 }

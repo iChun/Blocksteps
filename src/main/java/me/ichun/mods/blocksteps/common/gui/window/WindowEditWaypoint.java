@@ -4,6 +4,10 @@ import com.google.common.base.Splitter;
 import me.ichun.mods.blocksteps.common.core.Waypoint;
 import me.ichun.mods.blocksteps.common.entity.EntityWaypoint;
 import me.ichun.mods.blocksteps.common.gui.GuiWaypoints;
+import me.ichun.mods.ichunutil.client.gui.Theme;
+import me.ichun.mods.ichunutil.client.gui.window.Window;
+import me.ichun.mods.ichunutil.client.gui.window.element.*;
+import me.ichun.mods.ichunutil.client.render.RendererHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -15,17 +19,12 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityPainting;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.StatCollector;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
-import us.ichun.mods.ichunutil.client.gui.Theme;
-import us.ichun.mods.ichunutil.client.gui.window.Window;
-import us.ichun.mods.ichunutil.client.gui.window.element.*;
-import us.ichun.mods.ichunutil.client.render.RendererHelper;
-import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
 
 import java.awt.*;
 import java.nio.FloatBuffer;
@@ -72,7 +71,7 @@ public class WindowEditWaypoint extends Window
         elements.add(elementBeam);
 
         elementEntityType = new ElementSelector(this, 10, 110, width - 20, 12, 4, "blocksteps.waypoint.entityType", "Waypoint");
-        for(Object o : EntityList.stringToClassMapping.values())
+        for(Object o : EntityList.NAME_TO_CLASS.values())
         {
             Class<? extends Entity> clz = (Class)o;
             if(!(EntityPainting.class.isAssignableFrom(clz) || EntityItem.class.isAssignableFrom(clz)))
@@ -104,7 +103,7 @@ public class WindowEditWaypoint extends Window
         elementColour = new ElementTextInput(this, 0, 0, 50, 12, 0, "blocksteps.waypoint.colour", 6);
         elements.add(elementColour);
 
-        elements.add(new ElementButtonTooltip(this, 12 + Minecraft.getMinecraft().fontRendererObj.getStringWidth(StatCollector.translateToLocal("blocksteps.waypoint.pos")), 49, 9, 9, ID_CURRENT_POS, false, 0, 0, "X", "blocksteps.waypoint.currentPos"));
+        elements.add(new ElementButtonTooltip(this, 12 + Minecraft.getMinecraft().fontRendererObj.getStringWidth(I18n.translateToLocal("blocksteps.waypoint.pos")), 49, 9, 9, ID_CURRENT_POS, false, 0, 0, "X", "blocksteps.waypoint.currentPos"));
     }
 
     @Override
@@ -148,10 +147,10 @@ public class WindowEditWaypoint extends Window
             elementColour.width = 60 - 7;
 
             super.draw(mouseX, mouseY);
-            workspace.getFontRenderer().drawString(StatCollector.translateToLocal("blocksteps.waypoint.name"), posX + 11, posY + 20, Theme.getAsHex(workspace.currentTheme.font), false);
-            workspace.getFontRenderer().drawString(StatCollector.translateToLocal("blocksteps.waypoint.pos"), posX + 11, posY + 50, Theme.getAsHex(workspace.currentTheme.font), false);
-            workspace.getFontRenderer().drawString(StatCollector.translateToLocal("blocksteps.waypoint.entityType"), posX + 11, posY + 100, Theme.getAsHex(workspace.currentTheme.font), false);
-            workspace.getFontRenderer().drawString(StatCollector.translateToLocal("blocksteps.waypoint.renderRange"), posX + width - 10 - workspace.getFontRenderer().getStringWidth(StatCollector.translateToLocal("blocksteps.waypoint.renderRange")), posY + 130, Theme.getAsHex(workspace.currentTheme.font), false);
+            workspace.getFontRenderer().drawString(I18n.translateToLocal("blocksteps.waypoint.name"), posX + 11, posY + 20, Theme.getAsHex(workspace.currentTheme.font), false);
+            workspace.getFontRenderer().drawString(I18n.translateToLocal("blocksteps.waypoint.pos"), posX + 11, posY + 50, Theme.getAsHex(workspace.currentTheme.font), false);
+            workspace.getFontRenderer().drawString(I18n.translateToLocal("blocksteps.waypoint.entityType"), posX + 11, posY + 100, Theme.getAsHex(workspace.currentTheme.font), false);
+            workspace.getFontRenderer().drawString(I18n.translateToLocal("blocksteps.waypoint.renderRange"), posX + width - 10 - workspace.getFontRenderer().getStringWidth(I18n.translateToLocal("blocksteps.waypoint.renderRange")), posY + 130, Theme.getAsHex(workspace.currentTheme.font), false);
 
             int x = posX + 11;
             int y = posY + height - 12;
@@ -160,7 +159,7 @@ public class WindowEditWaypoint extends Window
             GlStateManager.rotate(-90F, 0F, 0F, 1F);
             GlStateManager.translate(-(x), -(y), 0D);
             RendererHelper.endGlScissor();
-            workspace.getFontRenderer().drawString(StatCollector.translateToLocal("blocksteps.waypoint.colour"), x, y, Theme.getAsHex(workspace.currentTheme.font), false);
+            workspace.getFontRenderer().drawString(I18n.translateToLocal("blocksteps.waypoint.colour"), x, y, Theme.getAsHex(workspace.currentTheme.font), false);
             GlStateManager.popMatrix();
             int size = height - 140;
             RendererHelper.drawGradientOnScreen(0xff000000, 0xff000000, 0xffffffff, 0xff000000 | colourHue, posX + 20, posY + height - size - 11, size, size, 0D);
@@ -187,21 +186,23 @@ public class WindowEditWaypoint extends Window
                 RendererHelper.setColorFromInt(selectedWaypoint.colour);
                 RendererHelper.startGlScissor(posX + 20 + size + 16, posY + height - 23 - (size - 15) - 3, 60, (size - 15));
 
-                EntityHelperBase.storeBossStatus();
+                //                EntityHelperBase.storeBossStatus();
                 if(entInstance instanceof EntityDragon)
                 {
                     GlStateManager.rotate(180F, 0.0F, 1.0F, 0.0F);
                 }
                 try
                 {
-                    rendermanager.renderEntityWithPosYaw(entInstance, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F);
+                    rendermanager.setRenderShadow(false);
+                    rendermanager.doRenderEntity(entInstance, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F, false);
+                    rendermanager.setRenderShadow(true);
                 }
                 catch(Exception ignored){}
                 if(entInstance instanceof EntityDragon)
                 {
                     GlStateManager.rotate(180F, 0.0F, -1.0F, 0.0F);
                 }
-                EntityHelperBase.restoreBossStatus();
+                //                EntityHelperBase.restoreBossStatus();
                 RendererHelper.startGlScissor(posX + 1, posY + 1, getWidth() - 2, getHeight() - 2);
                 RendererHelper.setColorFromInt(0xffffff);
                 rendermanager.setPlayerViewY(viewY);

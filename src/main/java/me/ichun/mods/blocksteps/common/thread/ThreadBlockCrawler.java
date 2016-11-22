@@ -5,16 +5,16 @@ import me.ichun.mods.blocksteps.common.blockaid.BlockStepHandler;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.BlockPos;
-import net.minecraft.world.ChunkCoordIntPair;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 
 import java.util.*;
 
 public class ThreadBlockCrawler extends Thread
 {
-    public final Map<ChunkCoordIntPair, HashSet<BlockPos>> crawler = new HashMap<ChunkCoordIntPair, HashSet<BlockPos>>();
-    public final Map<ChunkCoordIntPair, HashSet<BlockPos>> surface = Collections.synchronizedMap(new HashMap<ChunkCoordIntPair, HashSet<BlockPos>>());
-    public final ArrayList<BlockPos> updatePoses = new ArrayList<BlockPos>();
+    public final Map<ChunkPos, HashSet<BlockPos>> crawler = new HashMap<>();
+    public final Map<ChunkPos, HashSet<BlockPos>> surface = Collections.synchronizedMap(new HashMap<ChunkPos, HashSet<BlockPos>>());
+    public final ArrayList<BlockPos> updatePoses = new ArrayList<>();
     public boolean needChecks = false;
 
     public ThreadBlockCrawler()
@@ -34,20 +34,20 @@ public class ThreadBlockCrawler extends Thread
                 if(needChecks)
                 {
                     Minecraft mc = Minecraft.getMinecraft();
-                    if(mc.thePlayer != null && mc.theWorld.provider.getDimensionId() != -1)
+                    if(mc.thePlayer != null && mc.theWorld.provider.getDimension() != -1)
                     {
                         updatePoses.clear();
 
                         BlockPos ref = new BlockPos(mc.thePlayer.posX, 0, mc.thePlayer.posZ);
                         int rangeHori = Math.max((Blocksteps.config.renderDistance == 0 ? (mc.gameSettings.renderDistanceChunks) : (Blocksteps.config.renderDistance)), 1) * 16;
 
-                        HashMap<ChunkCoordIntPair, Boolean> hasInfo = new HashMap<ChunkCoordIntPair, Boolean>();
+                        HashMap<ChunkPos, Boolean> hasInfo = new HashMap<>();
 
                         for(int i = -rangeHori; i <= rangeHori; i++)
                         {
                             for(int k = -rangeHori; k <= rangeHori; k++)
                             {
-                                ChunkCoordIntPair chunk = new ChunkCoordIntPair((ref.getX() + i) >> 4, (ref.getZ() + k) >> 4);
+                                ChunkPos chunk = new ChunkPos((ref.getX() + i) >> 4, (ref.getZ() + k) >> 4);
                                 if(!hasInfo.containsKey(chunk))
                                 {
                                     hasInfo.put(chunk, surface.containsKey(chunk));
@@ -69,14 +69,14 @@ public class ThreadBlockCrawler extends Thread
                                         addPos(pos);
                                         continue;
                                     }
-                                    if(state.getBlock().isAir(mc.theWorld, pos) || !(state.getBlock().isNormalCube(mc.theWorld, pos) || BlockStepHandler.isAcceptableBlockType(state.getBlock()) || BlockLiquid.class.isInstance(state.getBlock())))
+                                    if(state.getBlock().isAir(state, mc.theWorld, pos) || !(state.getBlock().isNormalCube(state, mc.theWorld, pos) || BlockStepHandler.isAcceptableBlockType(state, state.getBlock()) || BlockLiquid.class.isInstance(state.getBlock())))
                                     {
                                         continue;
                                     }
                                     addPos(pos);
                                     if(finds == 0)
                                     {
-                                        ArrayList<BlockPos> periphs = new ArrayList<BlockPos>();
+                                        ArrayList<BlockPos> periphs = new ArrayList<>();
                                         BlockStepHandler.addPeripherals(mc.theWorld, pos, periphs, false);
                                         for(BlockPos pos1 : periphs)
                                         {
@@ -91,10 +91,10 @@ public class ThreadBlockCrawler extends Thread
 
                         synchronized(surface)
                         {
-                            Iterator<Map.Entry<ChunkCoordIntPair, HashSet<BlockPos>>> ite = surface.entrySet().iterator();
+                            Iterator<Map.Entry<ChunkPos, HashSet<BlockPos>>> ite = surface.entrySet().iterator();
                             while(ite.hasNext())
                             {
-                                Map.Entry<ChunkCoordIntPair, HashSet<BlockPos>> e = ite.next();
+                                Map.Entry<ChunkPos, HashSet<BlockPos>> e = ite.next();
                                 double dx = e.getKey().chunkXPos << 4 - ref.getX();
                                 double dz = e.getKey().chunkZPos << 4 - ref.getZ();
                                 double dist = Math.sqrt(dx * dx + dz * dz);
@@ -110,7 +110,8 @@ public class ThreadBlockCrawler extends Thread
 
                         for(BlockPos pos : updatePoses)
                         {
-                            Blocksteps.eventHandler.renderGlobalProxy.markBlockForUpdate(pos);
+                            IBlockState state = mc.theWorld.getBlockState(pos);
+                            Blocksteps.eventHandler.renderGlobalProxy.notifyBlockUpdate(mc.theWorld, pos, state, state, 3);
                         }
                     }
                     needChecks = false;
@@ -126,11 +127,11 @@ public class ThreadBlockCrawler extends Thread
 
     private void addPos(BlockPos pos)
     {
-        ChunkCoordIntPair coord = new ChunkCoordIntPair(pos.getX() >> 4, pos.getZ() >> 4);
+        ChunkPos coord = new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4);
         HashSet<BlockPos> poses = crawler.get(coord);
         if(poses == null)
         {
-            poses = new HashSet<BlockPos>();
+            poses = new HashSet<>();
             crawler.put(coord, poses);
         }
         poses.add(pos);

@@ -3,28 +3,28 @@ package me.ichun.mods.blocksteps.common.core;
 import com.google.gson.annotations.SerializedName;
 import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.entity.EntityWaypoint;
+import me.ichun.mods.ichunutil.client.gui.window.element.IIdentifiable;
+import me.ichun.mods.ichunutil.client.gui.window.element.IListable;
+import me.ichun.mods.ichunutil.client.render.RendererHelper;
+import me.ichun.mods.ichunutil.common.core.util.IOUtil;
+import me.ichun.mods.ichunutil.common.core.util.ResourceHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.EntityDragon;
 import net.minecraft.entity.passive.EntityPig;
 import net.minecraft.entity.passive.EntitySheep;
 import net.minecraft.item.EnumDyeColor;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.lwjgl.opengl.GL11;
-import us.ichun.mods.ichunutil.client.gui.window.element.IIdentifiable;
-import us.ichun.mods.ichunutil.client.gui.window.element.IListable;
-import us.ichun.mods.ichunutil.client.render.RendererHelper;
-import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
-import us.ichun.mods.ichunutil.common.core.util.ResourceHelper;
-import us.ichun.mods.ichunutil.common.module.tabula.common.project.ProjectInfo;
 
 import java.util.Locale;
 import java.util.Random;
@@ -56,7 +56,7 @@ public class Waypoint
 
     public Waypoint(BlockPos wpPos)
     {
-        ident = RandomStringUtils.randomAscii(ProjectInfo.IDENTIFIER_LENGTH);
+        ident = RandomStringUtils.randomAscii(IOUtil.IDENTIFIER_LENGTH);
         name = "New Waypoint";
         pos = wpPos;
         int r = 255;
@@ -106,6 +106,12 @@ public class Waypoint
         return "   " + name;
     }
 
+    @Override
+    public boolean localizable()
+    {
+        return false;
+    }
+
     public void render(double d, double d1, double d2, float partialTicks, boolean inWorld)
     {
         if(this.visible)
@@ -121,8 +127,8 @@ public class Waypoint
                     int k = ii % j;
                     int l = (ii + 1) % j;
                     float f7 = ((float)(mc.thePlayer.ticksExisted % 25) + partialTicks) / 25.0F;
-                    float[] afloat1 = EntitySheep.func_175513_a(EnumDyeColor.byMetadata(k));
-                    float[] afloat2 = EntitySheep.func_175513_a(EnumDyeColor.byMetadata(l));
+                    float[] afloat1 = EntitySheep.getDyeRgb(EnumDyeColor.byMetadata(k));
+                    float[] afloat2 = EntitySheep.getDyeRgb(EnumDyeColor.byMetadata(l));
                     clr = ((int)((afloat1[0] * (1.0F - f7) + afloat2[0] * f7) * 255F) << 16) + ((int)((afloat1[1] * (1.0F - f7) + afloat2[1] * f7) * 255F) << 8) + ((int)((afloat1[2] * (1.0F - f7) + afloat2[2] * f7) * 255F));
                 }
             }
@@ -131,7 +137,7 @@ public class Waypoint
                 if(this.beam)
                 {
                     Tessellator tessellator = Tessellator.getInstance();
-                    WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+                    VertexBuffer vertexBuffer = tessellator.getBuffer();
                     double j = 0;
                     double l = 256;
                     if(Blocksteps.config.waypointBeamHeightAdjust > 0)
@@ -167,7 +173,7 @@ public class Waypoint
                     }
                     float f3 = -f2 * 0.2F - (float)MathHelper.floor_float(-f2 * 0.1F);
                     double dd3 = (double)f2 * 0.025D * -1.5D;
-                    worldrenderer.startDrawingQuads();
+                    vertexBuffer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
                     double dd4 = 0.1D;
                     double dd5 = 0.5D + Math.cos(dd3 + 2.356194490192345D) * dd4;
                     double d6 = 0.5D + Math.sin(dd3 + 2.356194490192345D) * dd4;
@@ -184,29 +190,27 @@ public class Waypoint
                     float r = (clr >> 16 & 0xff) / 255F;
                     float g = (clr >> 8 & 0xff) / 255F;
                     float b = (clr & 0xff) / 255F;
-                    worldrenderer.setColorRGBA_F(r, g, b, 0.125F);
-                    worldrenderer.addVertexWithUV(x + dd5, y + (double)l, z + d6, d14, d16);
-                    worldrenderer.addVertexWithUV(x + dd5, y + (double)j, z + d6, d14, d15);
-                    worldrenderer.addVertexWithUV(x + d7, y + (double)j, z + d8, d13, d15);
-                    worldrenderer.addVertexWithUV(x + d7, y + (double)l, z + d8, d13, d16);
-                    worldrenderer.addVertexWithUV(x + d11, y + (double)l, z + d12, d14, d16);
-                    worldrenderer.addVertexWithUV(x + d11, y + (double)j, z + d12, d14, d15);
-                    worldrenderer.addVertexWithUV(x + d9, y + (double)j, z + d10, d13, d15);
-                    worldrenderer.addVertexWithUV(x + d9, y + (double)l, z + d10, d13, d16);
-                    worldrenderer.addVertexWithUV(x + d7, y + (double)l, z + d8, d14, d16);
-                    worldrenderer.addVertexWithUV(x + d7, y + (double)j, z + d8, d14, d15);
-                    worldrenderer.addVertexWithUV(x + d11, y + (double)j, z + d12, d13, d15);
-                    worldrenderer.addVertexWithUV(x + d11, y + (double)l, z + d12, d13, d16);
-                    worldrenderer.addVertexWithUV(x + d9, y + (double)l, z + d10, d14, d16);
-                    worldrenderer.addVertexWithUV(x + d9, y + (double)j, z + d10, d14, d15);
-                    worldrenderer.addVertexWithUV(x + dd5, y + (double)j, z + d6, d13, d15);
-                    worldrenderer.addVertexWithUV(x + dd5, y + (double)l, z + d6, d13, d16);
+                    vertexBuffer.pos(x + dd5, y + l, z + d6).tex(d14, d16).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + dd5, y + j, z + d6).tex(d14, d15).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d7, y + j, z + d8).tex(d13, d15).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d7, y + l, z + d8).tex(d13, d16).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d11, y + l, z + d12).tex(d14, d16).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d11, y + j, z + d12).tex(d14, d15).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d9, y + j, z + d10).tex(d13, d15).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d9, y + l, z + d10).tex(d13, d16).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d7, y + l, z + d8).tex(d14, d16).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d7, y + j, z + d8).tex(d14, d15).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d11, y + j, z + d12).tex(d13, d15).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d11, y + l, z + d12).tex(d13, d16).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d9, y + l, z + d10).tex(d14, d16).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d9, y + j, z + d10).tex(d14, d15).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + dd5, y + j, z + d6).tex(d13, d15).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + dd5, y + l, z + d6).tex(d13, d16).color(r, g, b, 0.125F).endVertex();
                     tessellator.draw();
                     GlStateManager.enableBlend();
                     GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
                     GlStateManager.depthMask(false);
-                    worldrenderer.startDrawingQuads();
-                    worldrenderer.setColorRGBA_F(r, g, b, 0.125F);
+                    vertexBuffer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
                     dd3 = 0.3D;
                     dd4 = 0.3D;
                     dd5 = 0.7D;
@@ -219,22 +223,22 @@ public class Waypoint
                     d12 = 1.0D;
                     d13 = (double)(-1.0F + f3);
                     d14 = (double)((float)256) + d13;
-                    worldrenderer.addVertexWithUV(x + dd3, y + (double)l, z + dd4, d12, d14);
-                    worldrenderer.addVertexWithUV(x + dd3, y + (double)j, z + dd4, d12, d13);
-                    worldrenderer.addVertexWithUV(x + dd5, y + (double)j, z + d6, d11, d13);
-                    worldrenderer.addVertexWithUV(x + dd5, y + (double)l, z + d6, d11, d14);
-                    worldrenderer.addVertexWithUV(x + d9, y + (double)l, z + d10, d12, d14);
-                    worldrenderer.addVertexWithUV(x + d9, y + (double)j, z + d10, d12, d13);
-                    worldrenderer.addVertexWithUV(x + d7, y + (double)j, z + d8, d11, d13);
-                    worldrenderer.addVertexWithUV(x + d7, y + (double)l, z + d8, d11, d14);
-                    worldrenderer.addVertexWithUV(x + dd5, y + (double)l, z + d6, d12, d14);
-                    worldrenderer.addVertexWithUV(x + dd5, y + (double)j, z + d6, d12, d13);
-                    worldrenderer.addVertexWithUV(x + d9, y + (double)j, z + d10, d11, d13);
-                    worldrenderer.addVertexWithUV(x + d9, y + (double)l, z + d10, d11, d14);
-                    worldrenderer.addVertexWithUV(x + d7, y + (double)l, z + d8, d12, d14);
-                    worldrenderer.addVertexWithUV(x + d7, y + (double)j, z + d8, d12, d13);
-                    worldrenderer.addVertexWithUV(x + dd3, y + (double)j, z + dd4, d11, d13);
-                    worldrenderer.addVertexWithUV(x + dd3, y + (double)l, z + dd4, d11, d14);
+                    vertexBuffer.pos(x + dd3, y + l, z + dd4).tex(d12, d14).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + dd3, y + j, z + dd4).tex(d12, d13).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + dd5, y + j, z + d6).tex(d11, d13).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + dd5, y + l, z + d6).tex(d11, d14).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d9, y + l, z + d10).tex(d12, d14).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d9, y + j, z + d10).tex(d12, d13).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d7, y + j, z + d8).tex(d11, d13).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d7, y + l, z + d8).tex(d11, d14).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + dd5, y + l, z + d6).tex(d12, d14).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + dd5, y + j, z + d6).tex(d12, d13).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d9, y + j, z + d10).tex(d11, d13).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d9, y + l, z + d10).tex(d11, d14).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d7, y + l, z + d8).tex(d12, d14).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + d7, y + j, z + d8).tex(d12, d13).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + dd3, y + j, z + dd4).tex(d11, d13).color(r, g, b, 0.125F).endVertex();
+                    vertexBuffer.pos(x + dd3, y + l, z + dd4).tex(d11, d14).color(r, g, b, 0.125F).endVertex();
                     tessellator.draw();
                     GlStateManager.enableLighting();
                     GlStateManager.enableTexture2D();
@@ -264,7 +268,7 @@ public class Waypoint
                     catch(Exception e)
                     {
                         errored = true;
-                        Blocksteps.logger.warn("Error creating waypoint indicator for waypoint " + this.name + " with type " + this.entityType);
+                        Blocksteps.LOGGER.warn("Error creating waypoint indicator for waypoint " + this.name + " with type " + this.entityType);
                         e.printStackTrace();
                     }
                 }
@@ -300,7 +304,7 @@ public class Waypoint
                         GlStateManager.disableDepth();
                     }
 
-                    EntityHelperBase.storeBossStatus();
+                    //                    EntityHelperBase.storeBossStatus();
 
                     if(this.entityInstance instanceof EntityDragon)
                     {
@@ -319,7 +323,7 @@ public class Waypoint
                         GlStateManager.rotate(180F, 0.0F, -1.0F, 0.0F);
                     }
 
-                    EntityHelperBase.restoreBossStatus();
+                    //                    EntityHelperBase.restoreBossStatus();
 
                     if(Blocksteps.config.waypointIndicatorThroughBlocks == 1)
                     {
@@ -374,16 +378,15 @@ public class Waypoint
             GlStateManager.enableBlend();
             GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
             Tessellator tessellator = Tessellator.getInstance();
-            WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+            VertexBuffer vertexBuffer = tessellator.getBuffer();
             byte b0 = 0;
             GlStateManager.disableTexture2D();
-            worldrenderer.startDrawingQuads();
+            vertexBuffer.begin(7, DefaultVertexFormats.POSITION_COLOR);
             int j = fontrenderer.getStringWidth(str) / 2;
-            worldrenderer.setColorRGBA_F(0.0F, 0.0F, 0.0F, 0.25F);
-            worldrenderer.addVertex((double)(-j - 1), (double)(-1 + b0), 0.0D);
-            worldrenderer.addVertex((double)(-j - 1), (double)(8 + b0), 0.0D);
-            worldrenderer.addVertex((double)(j + 1), (double)(8 + b0), 0.0D);
-            worldrenderer.addVertex((double)(j + 1), (double)(-1 + b0), 0.0D);
+            vertexBuffer.pos((double)(-j - 1), (double)(-1 + b0), 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
+            vertexBuffer.pos((double)(-j - 1), (double)(8 + b0), 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
+            vertexBuffer.pos((double)(j + 1), (double)(8 + b0), 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
+            vertexBuffer.pos((double)(j + 1), (double)(-1 + b0), 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
             tessellator.draw();
             GlStateManager.enableTexture2D();
             fontrenderer.drawString(str, -fontrenderer.getStringWidth(str) / 2, b0, clr);
@@ -392,13 +395,12 @@ public class Waypoint
                 b0 = -9;
                 str = String.format(Locale.ENGLISH, "%.2f", mc.thePlayer.getDistance(this.pos.getX() + 0.5D, this.pos.getY(), this.pos.getZ() + 0.5D)) + "m";
                 GlStateManager.disableTexture2D();
-                worldrenderer.startDrawingQuads();
+                vertexBuffer.begin(7, DefaultVertexFormats.POSITION_COLOR);
                 j = fontrenderer.getStringWidth(str) / 2;
-                worldrenderer.setColorRGBA_F(0.0F, 0.0F, 0.0F, 0.25F);
-                worldrenderer.addVertex((double)(-j - 1), (double)(-1 + b0), 0.0D);
-                worldrenderer.addVertex((double)(-j - 1), (double)(8 + b0), 0.0D);
-                worldrenderer.addVertex((double)(j + 1), (double)(8 + b0), 0.0D);
-                worldrenderer.addVertex((double)(j + 1), (double)(-1 + b0), 0.0D);
+                vertexBuffer.pos((double)(-j - 1), (double)(-1 + b0), 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
+                vertexBuffer.pos((double)(-j - 1), (double)(8 + b0), 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
+                vertexBuffer.pos((double)(j + 1), (double)(8 + b0), 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
+                vertexBuffer.pos((double)(j + 1), (double)(-1 + b0), 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
                 tessellator.draw();
                 GlStateManager.enableTexture2D();
                 fontrenderer.drawString(str, -fontrenderer.getStringWidth(str) / 2, b0, clr);
@@ -408,13 +410,12 @@ public class Waypoint
                 b0 = 9;
                 str = "X:" + pos.getX() + " Y:" + pos.getY() + " Z:" + pos.getZ();
                 GlStateManager.disableTexture2D();
-                worldrenderer.startDrawingQuads();
+                vertexBuffer.begin(7, DefaultVertexFormats.POSITION_COLOR);
                 j = fontrenderer.getStringWidth(str) / 2;
-                worldrenderer.setColorRGBA_F(0.0F, 0.0F, 0.0F, 0.25F);
-                worldrenderer.addVertex((double)(-j - 1), (double)(-1 + b0), 0.0D);
-                worldrenderer.addVertex((double)(-j - 1), (double)(8 + b0), 0.0D);
-                worldrenderer.addVertex((double)(j + 1), (double)(8 + b0), 0.0D);
-                worldrenderer.addVertex((double)(j + 1), (double)(-1 + b0), 0.0D);
+                vertexBuffer.pos((double)(-j - 1), (double)(-1 + b0), 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
+                vertexBuffer.pos((double)(-j - 1), (double)(8 + b0), 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
+                vertexBuffer.pos((double)(j + 1), (double)(8 + b0), 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
+                vertexBuffer.pos((double)(j + 1), (double)(-1 + b0), 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).endVertex();
                 tessellator.draw();
                 GlStateManager.enableTexture2D();
                 fontrenderer.drawString(str, -fontrenderer.getStringWidth(str) / 2, b0, clr);

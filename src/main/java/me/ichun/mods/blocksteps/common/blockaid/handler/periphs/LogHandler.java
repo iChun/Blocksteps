@@ -5,7 +5,7 @@ import me.ichun.mods.blocksteps.api.BlockPeripheralHandler;
 import net.minecraft.block.BlockLeaves;
 import net.minecraft.block.BlockLog;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 
 import java.util.ArrayList;

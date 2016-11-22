@@ -4,15 +4,15 @@ import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.core.ChunkStore;
 import me.ichun.mods.blocksteps.common.core.Waypoint;
 import me.ichun.mods.blocksteps.common.gui.GuiWaypoints;
+import me.ichun.mods.ichunutil.client.gui.Theme;
+import me.ichun.mods.ichunutil.client.gui.window.IWorkspace;
+import me.ichun.mods.ichunutil.client.gui.window.Window;
+import me.ichun.mods.ichunutil.client.gui.window.element.Element;
+import me.ichun.mods.ichunutil.client.gui.window.element.ElementButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.StatCollector;
-import us.ichun.mods.ichunutil.client.gui.Theme;
-import us.ichun.mods.ichunutil.client.gui.window.IWorkspace;
-import us.ichun.mods.ichunutil.client.gui.window.Window;
-import us.ichun.mods.ichunutil.client.gui.window.element.Element;
-import us.ichun.mods.ichunutil.client.gui.window.element.ElementButton;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.translation.I18n;
 
 public class WindowConfirmDelete extends Window
 {
@@ -34,7 +34,7 @@ public class WindowConfirmDelete extends Window
         super.draw(mouseX, mouseY);
         if(!minimized)
         {
-            workspace.getFontRenderer().drawString(StatCollector.translateToLocal(waypoint == null ? "blocksteps.gui.confirmDeleteMap" : "blocksteps.gui.confirmDeleteWaypoint"), posX + 15, posY + 40, Theme.getAsHex(workspace.currentTheme.font), false);
+            workspace.getFontRenderer().drawString(I18n.translateToLocal(waypoint == null ? "blocksteps.gui.confirmDeleteMap" : "blocksteps.gui.confirmDeleteWaypoint"), posX + 15, posY + 40, Theme.getAsHex(workspace.currentTheme.font), false);
         }
     }
 
@@ -56,16 +56,16 @@ public class WindowConfirmDelete extends Window
             {
                 if(!GuiScreen.isShiftKeyDown())
                 {
-                    Blocksteps.eventHandler.getWaypoints(Minecraft.getMinecraft().theWorld.provider.getDimensionId()).clear();
+                    Blocksteps.eventHandler.getWaypoints(Minecraft.getMinecraft().theWorld.provider.getDimension()).clear();
                 }
-                Blocksteps.eventHandler.getSteps(Minecraft.getMinecraft().theWorld.provider.getDimensionId()).clear();
+                Blocksteps.eventHandler.getSteps(Minecraft.getMinecraft().theWorld.provider.getDimension()).clear();
                 ChunkStore.clear();
                 Blocksteps.eventHandler.renderGlobalProxy.markAllForUpdateFromPos(new BlockPos(Minecraft.getMinecraft().thePlayer));
                 Blocksteps.eventHandler.repopulateBlocksToRender = Blocksteps.eventHandler.purgeRerender = true;
             }
             else
             {
-                Blocksteps.eventHandler.getWaypoints(Minecraft.getMinecraft().theWorld.provider.getDimensionId()).remove(waypoint);
+                Blocksteps.eventHandler.getWaypoints(Minecraft.getMinecraft().theWorld.provider.getDimension()).remove(waypoint);
             }
             ((GuiWaypoints)workspace).windowWaypoints.list.selectedIdentifier = "";
 

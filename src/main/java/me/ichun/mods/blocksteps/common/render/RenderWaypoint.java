@@ -1,32 +1,34 @@
 package me.ichun.mods.blocksteps.common.render;
 
+import me.ichun.mods.blocksteps.common.entity.EntityWaypoint;
 import me.ichun.mods.blocksteps.common.model.ModelWaypoint;
+import me.ichun.mods.ichunutil.common.core.util.ResourceHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.MathHelper;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.util.ResourceLocation;
-import us.ichun.mods.ichunutil.common.core.util.ResourceHelper;
+import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.fml.client.registry.IRenderFactory;
 
-public class RenderWaypoint extends Render
+public class RenderWaypoint extends Render<EntityWaypoint>
 {
     private ModelBase modelWaypoint = new ModelWaypoint();
 
-    public RenderWaypoint()
+    public RenderWaypoint(RenderManager manager)
     {
-        super(Minecraft.getMinecraft().getRenderManager());
+        super(manager);
     }
 
     @Override
-    protected ResourceLocation getEntityTexture(Entity entity)
+    protected ResourceLocation getEntityTexture(EntityWaypoint entity)
     {
         return ResourceHelper.texEnderCrystal;
     }
 
     @Override
-    public void doRender(Entity entity, double x, double y, double z, float entityYaw, float partialTicks)
+    public void doRender(EntityWaypoint entity, double x, double y, double z, float entityYaw, float partialTicks)
     {
         float f2 = (float)entity.getEntityId() + Minecraft.getMinecraft().thePlayer.ticksExisted + partialTicks;
         GlStateManager.pushMatrix();
@@ -37,5 +39,14 @@ public class RenderWaypoint extends Render
         this.modelWaypoint.render(entity, 0.0F, f2 * 3.0F, f3 * 0.2F, 0.0F, 0.0F, 0.0625F);
         GlStateManager.popMatrix();
         super.doRender(entity, x, y, z, entityYaw, partialTicks);
+    }
+
+    public static class RenderFactory implements IRenderFactory<EntityWaypoint>
+    {
+        @Override
+        public Render<? super EntityWaypoint> createRenderFor(RenderManager manager)
+        {
+            return new RenderWaypoint(manager);
+        }
     }
 }

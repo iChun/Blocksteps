@@ -11,6 +11,14 @@ import me.ichun.mods.blocksteps.common.layer.LayerSheepPig;
 import me.ichun.mods.blocksteps.common.render.RenderGlobalProxy;
 import me.ichun.mods.blocksteps.common.thread.ThreadBlockCrawler;
 import me.ichun.mods.blocksteps.common.thread.ThreadCheckBlocks;
+import me.ichun.mods.ichunutil.client.core.event.RendererSafeCompatibilityEvent;
+import me.ichun.mods.ichunutil.client.keybind.KeyEvent;
+import me.ichun.mods.ichunutil.client.render.RendererHelper;
+import me.ichun.mods.ichunutil.common.core.util.EntityHelper;
+import me.ichun.mods.ichunutil.common.core.util.IOUtil;
+import me.ichun.mods.ichunutil.common.core.util.ResourceHelper;
+import me.ichun.mods.ichunutil.common.iChunUtil;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiIngameMenu;
@@ -22,18 +30,22 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderPig;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.passive.EntityPig;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
+import net.minecraft.entity.projectile.EntityTippedArrow;
+import net.minecraft.init.MobEffects;
+import net.minecraft.init.PotionTypes;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumWorldBlockLayer;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.StatCollector;
+import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -43,20 +55,13 @@ import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
-import us.ichun.mods.ichunutil.client.keybind.KeyEvent;
-import us.ichun.mods.ichunutil.client.render.RendererHelper;
-import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
-import us.ichun.mods.ichunutil.common.core.event.RendererSafeCompatibilityEvent;
-import us.ichun.mods.ichunutil.common.core.util.IOUtil;
-import us.ichun.mods.ichunutil.common.core.util.ResourceHelper;
-import us.ichun.mods.ichunutil.common.iChunUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.*;
 
-public class EventHandler
+public class EventHandlerClient
 {
     @SubscribeEvent
     public void onRendererSafeCompatibility(RendererSafeCompatibilityEvent event)
@@ -73,8 +78,8 @@ public class EventHandler
         {
             if(mc.thePlayer != null && !mc.gameSettings.hideGUI && (mc.currentScreen == null || mc.currentScreen instanceof GuiChat))
             {
-                ScaledResolution reso = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
-                float aScale = EntityHelperBase.interpolateValues(prevScale, scale, event.renderTickTime) / 100F;
+                ScaledResolution reso = new ScaledResolution(mc);
+                float aScale = EntityHelper.interpolateValues(prevScale, scale, event.renderTickTime) / 100F;
 
                 if(aScale > 0.0001F)
                 {
@@ -165,18 +170,18 @@ public class EventHandler
                         framebuffer.bindFramebufferTexture();
                         double zLevel = 900D;
                         Tessellator tessellator = Tessellator.getInstance();
-                        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
-                        worldrenderer.startDrawingQuads();
-                        worldrenderer.addVertexWithUV(0, reso.getScaledHeight_double(), zLevel, 0.0D, 0.0D);
-                        worldrenderer.addVertexWithUV(reso.getScaledWidth_double(), reso.getScaledHeight_double(), zLevel, 1.0D, 0.0D);
-                        worldrenderer.addVertexWithUV(reso.getScaledWidth_double(), 0, zLevel, 1.0D, 1.0D);
-                        worldrenderer.addVertexWithUV(0, 0, zLevel, 0.0D, 1.0D);
+                        VertexBuffer vertexBuffer = tessellator.getBuffer();
+                        vertexBuffer.begin(7, DefaultVertexFormats.POSITION_TEX);
+                        vertexBuffer.pos(0, reso.getScaledHeight_double(), zLevel).tex(0.0D, 0.0D).endVertex();
+                        vertexBuffer.pos(reso.getScaledWidth_double(), reso.getScaledHeight_double(), zLevel).tex(1.0D, 0.0D).endVertex();
+                        vertexBuffer.pos(reso.getScaledWidth_double(), 0, zLevel).tex(1.0D, 1.0D).endVertex();
+                        vertexBuffer.pos(0, 0, zLevel).tex(0.0D, 1.0D).endVertex();
                         tessellator.draw();
                         framebuffer.unbindFramebufferTexture();
 
                         GlStateManager.enableAlpha();
 
-                        if((float)rendersThisSecond / (float)Blocksteps.config.mapFreq < ((float)(iChunUtil.proxy.tickHandlerClient.ticks - clock) + event.renderTickTime) / 20F)
+                        if((float)rendersThisSecond / (float)Blocksteps.config.mapFreq < ((float)(iChunUtil.eventHandlerClient.ticks - clock) + event.renderTickTime) / 20F)
                         {
                             lastRenderTick = event.renderTickTime;
                             rendersThisSecond++;
@@ -206,11 +211,11 @@ public class EventHandler
                             int count = 0;
                             if(mapTypeTimeout > 0)
                             {
-                                mc.fontRendererObj.drawString(StatCollector.translateToLocal("blocksteps.mapType.type") + StatCollector.translateToLocal(Blocksteps.config.mapType == 1 ? "blocksteps.mapType.blocksteps" : Blocksteps.config.mapType == 2 ? "blocksteps.mapType.surface" : Blocksteps.config.mapType == 3 ? "blocksteps.mapType.threedee" : "blocksteps.mapType.cylindricalSlice"), (int)((x + 2) / scale), (int)((y + 2 + (7 * count++)) / scale), 0xffffff);
+                                mc.fontRendererObj.drawString(I18n.translateToLocal("blocksteps.mapType.type") + I18n.translateToLocal(Blocksteps.config.mapType == 1 ? "blocksteps.mapType.blocksteps" : Blocksteps.config.mapType == 2 ? "blocksteps.mapType.surface" : Blocksteps.config.mapType == 3 ? "blocksteps.mapType.threedee" : "blocksteps.mapType.cylindricalSlice"), (int)((x + 2) / scale), (int)((y + 2 + (7 * count++)) / scale), 0xffffff);
                             }
                             if(waypointTimeout > 0)
                             {
-                                mc.fontRendererObj.drawString(StatCollector.translateToLocal(hideWaypoints ? "blocksteps.waypoint.hide" : "blocksteps.waypoint.show"), (int)((x + 2) / scale), (int)((y + 2 + (7 * count++)) / scale), 0xffffff);
+                                mc.fontRendererObj.drawString(I18n.translateToLocal(hideWaypoints ? "blocksteps.waypoint.hide" : "blocksteps.waypoint.show"), (int)((x + 2) / scale), (int)((y + 2 + (7 * count++)) / scale), 0xffffff);
                             }
                             if(Blocksteps.config.mapShowCoordinates == 1)
                             {
@@ -221,8 +226,8 @@ public class EventHandler
                         if(mc.gameSettings.showDebugInfo)
                         {
                             int count = 0;
-                            mc.fontRendererObj.drawString("Steps loaded: " + getSteps(mc.theWorld.provider.getDimensionId()).size(), x + 2, y + 2 + (10 * count++), 0xffffff);
-                            mc.fontRendererObj.drawString("Waypoints: " + getWaypoints(mc.theWorld.provider.getDimensionId()).size(), x + 2, y + 2 + (10 * count++), 0xffffff);
+                            mc.fontRendererObj.drawString("Steps loaded: " + getSteps(mc.theWorld.provider.getDimension()).size(), x + 2, y + 2 + (10 * count++), 0xffffff);
+                            mc.fontRendererObj.drawString("Waypoints: " + getWaypoints(mc.theWorld.provider.getDimension()).size(), x + 2, y + 2 + (10 * count++), 0xffffff);
                             mc.fontRendererObj.drawString(!hideWaypoints ? "Showing waypoints" : "Hiding waypoints", x + 2, y + 2 + (10 * count++), 0xffffff);
                             mc.fontRendererObj.drawString("Map Type: " + Blocksteps.config.mapType, x + 2, y + 2 + (10 * count++), 0xffffff);
 
@@ -249,10 +254,12 @@ public class EventHandler
                         float arrowScale = 8F * alphaAmp;
                         GlStateManager.scale(-arrowScale, arrowScale, arrowScale);
                         GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);
-                        GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleX, angleX, event.renderTickTime), 1.0F, 0.0F, 0.0F);
-                        GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleY, angleY, event.renderTickTime), 0.0F, 1.0F, 0.0F);
+                        GlStateManager.rotate(EntityHelper.interpolateRotation(prevAngleX, angleX, event.renderTickTime), 1.0F, 0.0F, 0.0F);
+                        GlStateManager.rotate(EntityHelper.interpolateRotation(prevAngleY, angleY, event.renderTickTime), 0.0F, 1.0F, 0.0F);
                         RenderManager rendermanager = Minecraft.getMinecraft().getRenderManager();
-                        rendermanager.renderEntityWithPosYaw(arrowCompass, 0.0D, 0.0D, 0.0D, 0.0F, event.renderTickTime);
+                        rendermanager.setRenderShadow(false);
+                        rendermanager.doRenderEntity(arrowCompass, 0.0D, 0.0D, 0.0D, 0.0F, event.renderTickTime, false);
+                        rendermanager.setRenderShadow(true);
                         GlStateManager.popMatrix();
 
                         GlStateManager.enableLighting();
@@ -277,7 +284,8 @@ public class EventHandler
                             {
                                 for(BlockPos pos : info.blocksToRender)
                                 {
-                                    renderGlobalProxy.markBlockForUpdate(pos);
+                                    IBlockState state = info.world.getBlockState(pos);
+                                    renderGlobalProxy.notifyBlockUpdate(info.world, pos, state, state, 3);
                                 }
                                 repopulateBlocksToRender = true;
                             }
@@ -317,7 +325,7 @@ public class EventHandler
                         }
                         catch(Exception e)
                         {
-                            Blocksteps.logger.warn("Error loading save file: " + saveLocation);
+                            Blocksteps.LOGGER.warn("Error loading save file: " + saveLocation);
                         }
                         ;
                     }
@@ -337,13 +345,13 @@ public class EventHandler
         GlStateManager.translate((float)posX, (float)posY, 300.0F);
         if(fullscreen)
         {
-            GlStateManager.translate(EntityHelperBase.interpolateValues(prevOffsetX, offsetX, partialTicks), EntityHelperBase.interpolateValues(prevOffsetY, offsetY, partialTicks), 0F);
+            GlStateManager.translate(EntityHelper.interpolateValues(prevOffsetX, offsetX, partialTicks), EntityHelper.interpolateValues(prevOffsetY, offsetY, partialTicks), 0F);
         }
         GlStateManager.scale(-aScale, aScale, aScale);
         GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);
 
-        GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleX, angleX, partialTicks), 1.0F, 0.0F, 0.0F);
-        GlStateManager.rotate(EntityHelperBase.interpolateRotation(prevAngleY, angleY, partialTicks), 0.0F, 1.0F, 0.0F);
+        GlStateManager.rotate(EntityHelper.interpolateRotation(prevAngleX, angleX, partialTicks), 1.0F, 0.0F, 0.0F);
+        GlStateManager.rotate(EntityHelper.interpolateRotation(prevAngleY, angleY, partialTicks), 0.0F, 1.0F, 0.0F);
 
         GlStateManager.translate(0, -mc.thePlayer.getEyeHeight(), 0F);
 
@@ -378,8 +386,8 @@ public class EventHandler
 
             if(Blocksteps.config.brightMap == 1)
             {
-                effect = mc.thePlayer.getActivePotionEffect(Potion.nightVision);
-                mc.thePlayer.addPotionEffect(new PotionEffect(Potion.nightVision.getId(), 10, 1000));
+                effect = mc.thePlayer.getActivePotionEffect(MobEffects.NIGHT_VISION);
+                mc.thePlayer.addPotionEffect(new PotionEffect(MobEffects.NIGHT_VISION, 10, 1000));
                 mc.entityRenderer.updateTorchFlicker();
                 mc.entityRenderer.updateLightmap(1.0F);
             }
@@ -407,7 +415,7 @@ public class EventHandler
             }
 
             GlStateManager.color(1F, 1F, 1F, 1F);
-            mc.getTextureManager().bindTexture(TextureMap.locationBlocksTexture);
+            mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
             ((RenderGlobalProxy)renderglobal).setupTerrain = renderglobal.renderDistanceChunks == Blocksteps.config.renderDistance;
             renderglobal.setupTerrain(entity, (double)partialTicks, frustum, frameCount++, mc.thePlayer.isSpectator());
             ((RenderGlobalProxy)renderglobal).setupTerrain = false;
@@ -416,12 +424,12 @@ public class EventHandler
             GlStateManager.matrixMode(GL11.GL_MODELVIEW);
             GlStateManager.pushMatrix();
             GlStateManager.disableAlpha();
-            renderglobal.renderBlockLayer(EnumWorldBlockLayer.SOLID, (double)partialTicks, pass, entity);
+            renderglobal.renderBlockLayer(BlockRenderLayer.SOLID, (double)partialTicks, pass, entity);
             GlStateManager.enableAlpha();
-            renderglobal.renderBlockLayer(EnumWorldBlockLayer.CUTOUT_MIPPED, (double)partialTicks, pass, entity);
-            mc.getTextureManager().getTexture(TextureMap.locationBlocksTexture).setBlurMipmap(false, false);
-            renderglobal.renderBlockLayer(EnumWorldBlockLayer.CUTOUT, (double)partialTicks, pass, entity);
-            mc.getTextureManager().getTexture(TextureMap.locationBlocksTexture).restoreLastBlurMipmap();
+            renderglobal.renderBlockLayer(BlockRenderLayer.CUTOUT_MIPPED, (double)partialTicks, pass, entity);
+            mc.getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
+            renderglobal.renderBlockLayer(BlockRenderLayer.CUTOUT, (double)partialTicks, pass, entity);
+            mc.getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).restoreLastBlurMipmap();
 
             GlStateManager.matrixMode(GL11.GL_MODELVIEW);
             GlStateManager.popMatrix();
@@ -447,26 +455,26 @@ public class EventHandler
             GlStateManager.enableBlend();
             GlStateManager.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
             GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
-            mc.getTextureManager().bindTexture(TextureMap.locationBlocksTexture);
+            mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
             GlStateManager.shadeModel(GL11.GL_SMOOTH);
 
             if (mc.gameSettings.fancyGraphics)
             {
                 GlStateManager.enableBlend();
                 GlStateManager.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
-                renderglobal.renderBlockLayer(EnumWorldBlockLayer.TRANSLUCENT, (double)partialTicks, pass, entity);
+                renderglobal.renderBlockLayer(BlockRenderLayer.TRANSLUCENT, (double)partialTicks, pass, entity);
                 GlStateManager.disableBlend();
             }
             else
             {
-                renderglobal.renderBlockLayer(EnumWorldBlockLayer.TRANSLUCENT, (double)partialTicks, pass, entity);
+                renderglobal.renderBlockLayer(BlockRenderLayer.TRANSLUCENT, (double)partialTicks, pass, entity);
             }
 
             GlStateManager.shadeModel(GL11.GL_FLAT);
 
             if(Blocksteps.config.brightMap == 1)
             {
-                mc.thePlayer.removePotionEffectClient(Potion.nightVision.getId());
+                mc.thePlayer.removeActivePotionEffect(MobEffects.NIGHT_VISION);
                 mc.entityRenderer.updateTorchFlicker();
                 mc.entityRenderer.updateLightmap(1.0F);
                 if(effect != null)
@@ -514,14 +522,15 @@ public class EventHandler
                     renderGlobalProxy.lastViewEntityPitch += 0.001F;
                 }
 
-                List<BlockPos> steps = getSteps(mc.theWorld.provider.getDimensionId());
+                List<BlockPos> steps = getSteps(mc.theWorld.provider.getDimension());
                 while(steps.size() > Blocksteps.config.renderBlockCount)
                 {
                     BlockPos pos = steps.get(0);
                     steps.remove(0);
                     if(renderGlobalProxy != null && !steps.contains(pos))
                     {
-                        renderGlobalProxy.markBlockForUpdate(pos);
+                        IBlockState state = mc.theWorld.getBlockState(pos);
+                        renderGlobalProxy.notifyBlockUpdate(mc.theWorld, pos, state, state, 3);
                         repopulateBlocksToRender = true;
                         blocksToRenderByStep.removeAll(pos);
                     }
@@ -532,9 +541,9 @@ public class EventHandler
                     EntityPlayer player = (EntityPlayer)mc.theWorld.playerEntities.get(i);
                     if(player == mc.thePlayer || Blocksteps.config.trackOtherPlayers == 1)
                     {
-                        if(player.ridingEntity != null)
+                        if(player.getRidingEntity() != null)
                         {
-                            entitiesToTrack.add(player.ridingEntity);
+                            entitiesToTrack.add(player.getRidingEntity());
                         }
                         else
                         {
@@ -579,7 +588,7 @@ public class EventHandler
                         }
                         catch(Exception e)
                         {
-                            Blocksteps.logger.warn("Error saving file: " + saveLocation);
+                            Blocksteps.LOGGER.warn("Error saving file: " + saveLocation);
                         }
                     }
                 }
@@ -595,9 +604,9 @@ public class EventHandler
                     threadCrawlBlocks.needChecks = true;
                 }
 
-                if(iChunUtil.proxy.tickHandlerClient.ticks % 20L == 0)
+                if(iChunUtil.eventHandlerClient.ticks % 20L == 0)
                 {
-                    clock = iChunUtil.proxy.tickHandlerClient.ticks;
+                    clock = iChunUtil.eventHandlerClient.ticks;
                     rendersThisSecond = 0;
                 }
             }
@@ -616,7 +625,7 @@ public class EventHandler
         Blocksteps.eventHandler.prevScale = Blocksteps.eventHandler.scale = 0;
         saveTimeout = Blocksteps.config.saveInterval;
 
-        String connectionName = event.manager.getRemoteAddress().toString();
+        String connectionName = event.getManager().getRemoteAddress().toString();
         if(connectionName.contains("/") && !connectionName.startsWith("/192.168.")) //probably a public server
         {
             saveLocation = new File(new File(ResourceHelper.getModsFolder(), "/blocksteps/"), connectionName.substring(0, connectionName.indexOf("/")) + "_" + connectionName.substring(connectionName.indexOf(":") + 1, connectionName.length()) + ".bsv");
@@ -633,7 +642,7 @@ public class EventHandler
                 }
                 catch(Exception e)
                 {
-                    Blocksteps.logger.warn("Error loading save file: " + saveLocation);
+                    Blocksteps.LOGGER.warn("Error loading save file: " + saveLocation);
                 };
             }
         }
@@ -646,9 +655,9 @@ public class EventHandler
     @SubscribeEvent
     public void onWorldLoad(WorldEvent.Load event)
     {
-        if(event.world.isRemote && event.world instanceof WorldClient)
+        if(event.getWorld().isRemote && event.getWorld() instanceof WorldClient)
         {
-            setNewWorld((WorldClient)event.world);
+            setNewWorld((WorldClient)event.getWorld());
             blocksToRenderByStep.clear();
             ChunkStore.clear();
             synchronized(Blocksteps.eventHandler.threadCheckBlocks.checks)
@@ -672,8 +681,7 @@ public class EventHandler
 
             if(OpenGlHelper.isFramebufferEnabled())
             {
-                framebuffer = RendererHelper.createFrameBuffer(Blocksteps.MODNAME, true);
-                framebuffer.enableStencil();
+                framebuffer = RendererHelper.createFrameBuffer(true, true);
             }
 
             arrowCompass.prevRotationYaw = arrowCompass.rotationYaw = 180F;
@@ -838,10 +846,10 @@ public class EventHandler
     @SubscribeEvent
     public void onLivingDeath(LivingDeathEvent event)
     {
-        if(event.entityLiving.worldObj.isRemote && Blocksteps.config.waypointOnDeath == 1 && event.entityLiving == Minecraft.getMinecraft().thePlayer)
+        if(event.getEntityLiving().worldObj.isRemote && Blocksteps.config.waypointOnDeath == 1 && event.getEntityLiving() == Minecraft.getMinecraft().thePlayer)
         {
-            ArrayList<Waypoint> waypoints = Blocksteps.eventHandler.getWaypoints(event.entityLiving.worldObj.provider.getDimensionId());
-            waypoints.add((new Waypoint(new BlockPos(event.entityLiving))).setName("Death Location"));
+            ArrayList<Waypoint> waypoints = Blocksteps.eventHandler.getWaypoints(event.getEntityLiving().worldObj.provider.getDimension());
+            waypoints.add((new Waypoint(new BlockPos(event.getEntityLiving()))).setName("Death Location"));
         }
     }
 
@@ -852,7 +860,7 @@ public class EventHandler
         {
             Minecraft mc = Minecraft.getMinecraft();
             RenderManager renderManager = mc.getRenderManager();
-            ArrayList<Waypoint> points = Blocksteps.eventHandler.getWaypoints(mc.theWorld.provider.getDimensionId());
+            ArrayList<Waypoint> points = Blocksteps.eventHandler.getWaypoints(mc.theWorld.provider.getDimension());
             Blocksteps.eventHandler.renderingMinimap = true;
             for(Waypoint wp : points)
             {
@@ -861,7 +869,7 @@ public class EventHandler
                 double dist = Math.sqrt(dx * dx + dz * dz);
                 if(wp.renderRange == 0 || dist < wp.renderRange)
                 {
-                    wp.render(renderManager.renderPosX, renderManager.renderPosY, renderManager.renderPosZ, event.partialTicks, true);
+                    wp.render(renderManager.renderPosX, renderManager.renderPosY, renderManager.renderPosZ, event.getPartialTicks(), true);
                 }
             }
             GlStateManager.disableLighting(); //rendering the WP enables lighting. Disable it.
@@ -885,7 +893,7 @@ public class EventHandler
                 }
                 catch(Exception e)
                 {
-                    Blocksteps.logger.warn("Error saving file: " + saveLocation);
+                    Blocksteps.LOGGER.warn("Error saving file: " + saveLocation);
                 }
 
                 saveLocation = null;
@@ -906,7 +914,7 @@ public class EventHandler
         ArrayList<BlockPos> dimSteps = steps.get(dimension);
         if(dimSteps == null)
         {
-            dimSteps = new ArrayList<BlockPos>();
+            dimSteps = new ArrayList<>();
             steps.put(dimension, dimSteps);
         }
         return dimSteps;
@@ -917,7 +925,7 @@ public class EventHandler
         ArrayList<Waypoint> dimPoints = waypoints.get(dimension);
         if(dimPoints == null)
         {
-            dimPoints = new ArrayList<Waypoint>();
+            dimPoints = new ArrayList<>();
             waypoints.put(dimension, dimPoints);
         }
         return dimPoints;
@@ -959,7 +967,7 @@ public class EventHandler
     public TreeMap<Integer, ArrayList<BlockPos>> steps = new TreeMap<Integer, ArrayList<BlockPos>>(Ordering.natural()); //newest = last index. oldest = index 0
     public TreeMap<Integer, ArrayList<Waypoint>> waypoints = new TreeMap<Integer, ArrayList<Waypoint>>(Ordering.natural()); //newest = last index. oldest = index 0
 
-    public EntityArrow arrowCompass = new EntityArrow(null);
+    public EntityArrow arrowCompass = new EntityTippedArrow(null);
 
     public ArrayListMultimap<BlockPos, BlockPos> blocksToRenderByStep = ArrayListMultimap.create();
     public boolean repopulateBlocksToRender = false;

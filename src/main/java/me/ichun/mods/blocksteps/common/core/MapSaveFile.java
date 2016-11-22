@@ -1,7 +1,7 @@
 package me.ichun.mods.blocksteps.common.core;
 
 import me.ichun.mods.blocksteps.common.Blocksteps;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.TreeMap;

@@ -4,15 +4,15 @@ import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.core.Waypoint;
 import me.ichun.mods.blocksteps.common.gui.GuiWaypoints;
 import me.ichun.mods.blocksteps.common.gui.window.element.ElementWaypointList;
+import me.ichun.mods.ichunutil.client.gui.Theme;
+import me.ichun.mods.ichunutil.client.gui.window.Window;
+import me.ichun.mods.ichunutil.client.gui.window.element.Element;
+import me.ichun.mods.ichunutil.client.gui.window.element.ElementButtonTextured;
+import me.ichun.mods.ichunutil.client.gui.window.element.ElementListTree;
+import me.ichun.mods.ichunutil.client.render.RendererHelper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.ResourceLocation;
-import us.ichun.mods.ichunutil.client.gui.Theme;
-import us.ichun.mods.ichunutil.client.gui.window.Window;
-import us.ichun.mods.ichunutil.client.gui.window.element.Element;
-import us.ichun.mods.ichunutil.client.gui.window.element.ElementButtonTextured;
-import us.ichun.mods.ichunutil.client.gui.window.element.ElementListTree;
-import us.ichun.mods.ichunutil.client.render.RendererHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +49,7 @@ public class WindowWaypoints extends Window
         super.draw(mouseX, mouseY);
         RendererHelper.drawColourOnScreen(Theme.getAsHex(Theme.getInstance().windowBorder), 255, posX + BORDER_SIZE, posY + height - 25 - BORDER_SIZE, width - (BORDER_SIZE * 2), 1, 0);
 
-        ArrayList<Waypoint> creations = new ArrayList<Waypoint>(Blocksteps.eventHandler.getWaypoints(Minecraft.getMinecraft().theWorld.provider.getDimensionId()));
+        ArrayList<Waypoint> creations = new ArrayList<Waypoint>(Blocksteps.eventHandler.getWaypoints(Minecraft.getMinecraft().theWorld.provider.getDimension()));
         ArrayList<Waypoint> keepOut = new ArrayList<Waypoint>();
         for(int i = creations.size() - 1; i >= 0; i--)
         {
@@ -87,7 +87,7 @@ public class WindowWaypoints extends Window
         {
             if(mc.theWorld != null && mc.thePlayer != null)
             {
-                ArrayList<Waypoint> waypoints = Blocksteps.eventHandler.getWaypoints(mc.theWorld.provider.getDimensionId());
+                ArrayList<Waypoint> waypoints = Blocksteps.eventHandler.getWaypoints(mc.theWorld.provider.getDimension());
                 waypoints.add(new Waypoint(new BlockPos(mc.thePlayer)));
                 list.selectedIdentifier = waypoints.get(waypoints.size() - 1).getIdentifier();
             }

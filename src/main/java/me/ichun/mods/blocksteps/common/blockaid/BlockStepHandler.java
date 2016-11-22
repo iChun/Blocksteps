@@ -11,12 +11,14 @@ import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import static net.minecraft.util.EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
 
 public class BlockStepHandler
 {
@@ -41,7 +43,7 @@ public class BlockStepHandler
         if(!steps.isEmpty())
         {
             BlockPos lastPos = steps.get(steps.size() - 1);
-            if((entity != Minecraft.getMinecraft().thePlayer && entity != Minecraft.getMinecraft().thePlayer.ridingEntity) && steps.contains(pos) || lastPos.equals(pos))
+            if((entity != Minecraft.getMinecraft().thePlayer && entity != Minecraft.getMinecraft().thePlayer.getRidingEntity()) && steps.contains(pos) || lastPos.equals(pos))
             {
                 add = false;
             }
@@ -49,7 +51,7 @@ public class BlockStepHandler
         if(add)
         {
             IBlockState state = entity.worldObj.getBlockState(pos);
-            if(state.getBlock().isAir(entity.worldObj, pos) || !(state.getBlock().isNormalCube(entity.worldObj, pos) || isAcceptableBlockType(state.getBlock()) || !(entity instanceof EntityPlayer) && (entity.riddenByEntity instanceof EntityPlayer) && BlockLiquid.class.isInstance(state.getBlock())))
+            if(state.getBlock().isAir(state, entity.worldObj, pos) || !(state.getBlock().isNormalCube(state, entity.worldObj, pos) || isAcceptableBlockType(state, state.getBlock()) || !(entity instanceof EntityPlayer) && (entity.riddenByEntity instanceof EntityPlayer) && BlockLiquid.class.isInstance(state.getBlock())))
             {
                 add = false;
             }
@@ -65,7 +67,7 @@ public class BlockStepHandler
             {
                 steps.remove(pos);
             }
-            if(!steps.isEmpty() && (entity != Minecraft.getMinecraft().thePlayer && entity != Minecraft.getMinecraft().thePlayer.ridingEntity))
+            if(!steps.isEmpty() && (entity != Minecraft.getMinecraft().thePlayer && entity != Minecraft.getMinecraft().thePlayer.getRidingEntity()))
             {
                 steps.add(steps.size() - 1, pos); //add it before the latest one so that the latest is always the player's.
             }
@@ -109,7 +111,7 @@ public class BlockStepHandler
                             {
                                 BlockPos newPos = pos.add(i, j, k);
                                 IBlockState state = world.getBlockState(newPos);
-                                if(!(state.getBlock().isAir(world, newPos) || !(state.getBlock().isNormalCube(world, newPos) || isAcceptableBlockType(state.getBlock()) || BlockLiquid.class.isInstance(state.getBlock()))))
+                                if(!(state.getBlock().isAir(state, world, newPos) || !(state.getBlock().isNormalCube(state, world, newPos) || isAcceptableBlockType(state, state.getBlock()) || BlockLiquid.class.isInstance(state.getBlock()))))
                                 {
                                     renderPos.add(newPos);
                                 }
@@ -177,9 +179,9 @@ public class BlockStepHandler
         }
     }
 
-    public static boolean isAcceptableBlockType(Block block)
+    public static boolean isAcceptableBlockType(IBlockState state, Block block)
     {
-        return block.getRenderType() == 2 || block.getMaterial() == Material.glass || block == Blocks.glowstone || block == Blocks.waterlily || block == Blocks.farmland || block == Blocks.tnt || block == Blocks.ice || block instanceof BlockSlab || block instanceof BlockStairs;
+        return block.getRenderType(state) == ENTITYBLOCK_ANIMATED || block.getMaterial(state) == Material.GLASS || block == Blocks.GLOWSTONE || block == Blocks.WATERLILY || block == Blocks.FARMLAND || block == Blocks.TNT || block == Blocks.ICE || block instanceof BlockSlab || block instanceof BlockStairs;
     }
 
     public static boolean isBlockTypePeripheral(World world, BlockPos pos, Block block, IBlockState state, List<BlockPos> availableBlocks)

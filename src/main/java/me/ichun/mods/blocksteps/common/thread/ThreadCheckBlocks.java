@@ -10,7 +10,7 @@ import java.util.List;
 public class ThreadCheckBlocks extends Thread
 {
     public final List<CheckBlockInfo> checks = Collections.synchronizedList(new ArrayList<CheckBlockInfo>());
-    public ArrayList<CheckBlockInfo> checksList = new ArrayList<CheckBlockInfo>();
+    public ArrayList<CheckBlockInfo> checksList = new ArrayList<>();
 
     public ThreadCheckBlocks()
     {
@@ -23,8 +23,7 @@ public class ThreadCheckBlocks extends Thread
     {
         try
         {
-            boolean execute = true;
-            while(execute)
+            while(true)
             {
                 synchronized(checks)
                 {

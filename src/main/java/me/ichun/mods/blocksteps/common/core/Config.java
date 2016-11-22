@@ -1,14 +1,14 @@
 package me.ichun.mods.blocksteps.common.core;
 
 import me.ichun.mods.blocksteps.common.Blocksteps;
+import me.ichun.mods.ichunutil.client.keybind.KeyBind;
+import me.ichun.mods.ichunutil.common.core.config.ConfigBase;
+import me.ichun.mods.ichunutil.common.core.config.annotations.ConfigProp;
+import me.ichun.mods.ichunutil.common.core.config.annotations.IntBool;
+import me.ichun.mods.ichunutil.common.core.config.annotations.IntMinMax;
+import me.ichun.mods.ichunutil.common.core.config.types.Colour;
 import net.minecraftforge.fml.relauncher.Side;
 import org.lwjgl.input.Keyboard;
-import us.ichun.mods.ichunutil.client.keybind.KeyBind;
-import us.ichun.mods.ichunutil.common.core.config.ConfigBase;
-import us.ichun.mods.ichunutil.common.core.config.annotations.ConfigProp;
-import us.ichun.mods.ichunutil.common.core.config.annotations.IntBool;
-import us.ichun.mods.ichunutil.common.core.config.annotations.IntMinMax;
-import us.ichun.mods.ichunutil.common.core.config.types.Colour;
 
 import java.io.File;
 
@@ -257,12 +257,12 @@ public class Config extends ConfigBase
     @Override
     public String getModId()
     {
-        return Blocksteps.MODNAME.toLowerCase();
+        return Blocksteps.MOD_ID;
     }
 
     @Override
     public String getModName()
     {
-        return Blocksteps.MODNAME;
+        return Blocksteps.MOD_NAME;
     }
 }

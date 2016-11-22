@@ -6,7 +6,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RegionRenderCache;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class RegionRenderCacheBlocksteps extends RegionRenderCache
@@ -28,12 +28,12 @@ public class RegionRenderCacheBlocksteps extends RegionRenderCache
             double dist = Math.sqrt(dx * dx + dz * dz);
             if(dist > rangeHori)
             {
-                return Blocks.air.getDefaultState();
+                return Blocks.AIR.getDefaultState();
             }
         }
         else if(Blocksteps.config.mapType != 3 && !ChunkStore.contains(pos))
         {
-            return Blocks.air.getDefaultState();
+            return Blocks.AIR.getDefaultState();
         }
         return super.getBlockState(pos);
     }

@@ -1,8 +1,8 @@
 package me.ichun.mods.blocksteps.common.core;
 
 import me.ichun.mods.blocksteps.common.Blocksteps;
-import net.minecraft.util.BlockPos;
-import net.minecraft.world.ChunkCoordIntPair;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,13 +10,13 @@ import java.util.List;
 
 public class ChunkStore
 {
-    public static HashMap<ChunkCoordIntPair, HashSet<BlockPos>> chunkCache = new HashMap<ChunkCoordIntPair, HashSet<BlockPos>>();
+    public static HashMap<ChunkPos, HashSet<BlockPos>> chunkCache = new HashMap<>();
 
     public static void addBlocks(List<BlockPos> blockPoses)
     {
         for(BlockPos pos : blockPoses)
         {
-            ChunkCoordIntPair coord = new ChunkCoordIntPair(pos.getX() >> 4, pos.getZ() >> 4);
+            ChunkPos coord = new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4);
             HashSet<BlockPos> poses = chunkCache.get(coord);
             if(poses == null)
             {
@@ -29,7 +29,7 @@ public class ChunkStore
 
     public static boolean contains(BlockPos pos)
     {
-        ChunkCoordIntPair coord = new ChunkCoordIntPair(pos.getX() >> 4, pos.getZ() >> 4);
+        ChunkPos coord = new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4);
         if(Blocksteps.config.mapType == 2)
         {
             synchronized(Blocksteps.eventHandler.threadCrawlBlocks.surface)

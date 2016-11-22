@@ -2,12 +2,9 @@ package me.ichun.mods.blocksteps.common.gui.window.element;
 
 import me.ichun.mods.blocksteps.common.core.Waypoint;
 import me.ichun.mods.blocksteps.common.gui.window.WindowWaypoints;
+import me.ichun.mods.ichunutil.client.gui.window.element.ElementListTree;
+import me.ichun.mods.ichunutil.client.render.RendererHelper;
 import net.minecraft.util.ResourceLocation;
-import us.ichun.mods.ichunutil.client.gui.window.Window;
-import us.ichun.mods.ichunutil.client.gui.window.element.ElementListTree;
-import us.ichun.mods.ichunutil.client.render.RendererHelper;
-import us.ichun.mods.ichunutil.common.core.config.ConfigBase;
-import us.ichun.mods.ichunutil.common.module.tabula.common.project.components.Animation;
 
 public class ElementWaypointList extends ElementListTree
 {

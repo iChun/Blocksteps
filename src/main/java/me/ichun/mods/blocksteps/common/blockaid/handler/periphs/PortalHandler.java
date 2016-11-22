@@ -4,7 +4,7 @@ import me.ichun.mods.blocksteps.api.BlockPeripheralHandler;
 import net.minecraft.block.BlockPortal;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.IBlockAccess;
 
@@ -43,7 +43,7 @@ public class PortalHandler extends BlockPeripheralHandler
                         newPos = pos.add(0, j, -i);
                     }
                     IBlockState newState = world.getBlockState(newPos);
-                    if(newState.getBlock() == Blocks.obsidian)
+                    if(newState.getBlock() == Blocks.OBSIDIAN)
                     {
                         poses.add(newPos);
                         if(hasPortal && j != -1)
@@ -51,7 +51,7 @@ public class PortalHandler extends BlockPeripheralHandler
                             break;
                         }
                     }
-                    else if(newState.getBlock() == Blocks.portal)
+                    else if(newState.getBlock() == Blocks.PORTAL)
                     {
                         poses.add(newPos);
                         hasPortal = true;
@@ -72,7 +72,7 @@ public class PortalHandler extends BlockPeripheralHandler
                         newPos = pos.add(0, j, i);
                     }
                     IBlockState newState = world.getBlockState(newPos);
-                    if(newState.getBlock() == Blocks.obsidian)
+                    if(newState.getBlock() == Blocks.OBSIDIAN)
                     {
                         poses.add(newPos);
                         if(hasPortal && j != -1)
@@ -80,7 +80,7 @@ public class PortalHandler extends BlockPeripheralHandler
                             break;
                         }
                     }
-                    else if(newState.getBlock() == Blocks.portal)
+                    else if(newState.getBlock() == Blocks.PORTAL)
                     {
                         poses.add(newPos);
                         hasPortal = true;

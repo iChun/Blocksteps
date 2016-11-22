@@ -3,6 +3,9 @@ package me.ichun.mods.blocksteps.common.gui;
 import me.ichun.mods.blocksteps.common.Blocksteps;
 import me.ichun.mods.blocksteps.common.gui.window.WindowEditWaypoint;
 import me.ichun.mods.blocksteps.common.gui.window.WindowWaypoints;
+import me.ichun.mods.ichunutil.client.gui.window.IWorkspace;
+import me.ichun.mods.ichunutil.client.gui.window.Window;
+import me.ichun.mods.ichunutil.client.gui.window.element.Element;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
@@ -10,9 +13,6 @@ import net.minecraft.client.renderer.GlStateManager;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
-import us.ichun.mods.ichunutil.client.gui.window.IWorkspace;
-import us.ichun.mods.ichunutil.client.gui.window.Window;
-import us.ichun.mods.ichunutil.client.gui.window.element.Element;
 
 import java.util.ArrayList;
 
@@ -33,7 +33,7 @@ public class GuiWaypoints extends IWorkspace
 
         levels.clear();
 
-        ArrayList<Window> level = new ArrayList<Window>();
+        ArrayList<Window> level = new ArrayList<>();
 
         windowWaypoints = new WindowWaypoints(this, 10, 10, 105, height - 20);
         windowEditWaypoint = new WindowEditWaypoint(this, 115, 10, width - 125, height - 20);
@@ -42,7 +42,7 @@ public class GuiWaypoints extends IWorkspace
         level.add(windowEditWaypoint);
 
         levels.add(level);
-        levels.add(new ArrayList<Window>());
+        levels.add(new ArrayList<>());
     }
 
     @Override
@@ -69,7 +69,7 @@ public class GuiWaypoints extends IWorkspace
 
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
-        ScaledResolution resolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+        ScaledResolution resolution = new ScaledResolution(mc);
         GlStateManager.matrixMode(GL11.GL_PROJECTION);
         GlStateManager.loadIdentity();
         GlStateManager.ortho(0.0D, resolution.getScaledWidth_double(), resolution.getScaledHeight_double(), 0.0D, -5000.0D, 5000.0D);

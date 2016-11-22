@@ -1,9 +1,9 @@
 [
 {
-  "modid" : "Blocksteps",
+  "modid" : "blocksteps",
   "name" : "Blocksteps",
   "version" : "${version}",
-  "url" : "http://www.ichun.me/",
+  "url" : "http://ichun.me/mods/blocksteps/",
   "credits" : "",
   "authorList": [
     "iChun"
